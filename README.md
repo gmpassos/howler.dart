@@ -1,4 +1,4 @@
-[![howler.js](https://s3.amazonaws.com/howler.js/howler-logo.png "howler.js")](https://howlerjs.com)
+[![howler.dart](https://github.com/gmpassos/howler.dart/blob/master/logo/howler-dart-logo.png?raw=true "howler.dart")](https://github.com/gmpassos/howler.dart)
 
 # Description
 [howler.dart](https://howlerjs.com) is an audio library for the modern web.
