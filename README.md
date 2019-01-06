@@ -50,6 +50,7 @@ MIT [license](https://github.com/angular/angular.js/blob/master/LICENSE).
 ## Original project in JavaScript
 
 This library was originally written in JavaScript by [James Simpson](https://twitter.com/GoldFireStudios).
+It was ported to Dart 2 code by [Graciliano M. Passos](https://github.com/gmpassos).
 
 You can find the original project at [GitHub(howler.js)](https://github.com/goldfire/howler.js). 
 
