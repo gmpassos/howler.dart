@@ -24,7 +24,7 @@ main() {
         volume: 0.60 // Play with 60% of original volume.
     ) ;
     
-    howl.play(); // Play sounce
+    howl.play(); // Play sound.
     howl.fade(0.0, 0.60, 10000) ; // Make a fade, from volume 0% to 60% in 10s
 
 }
