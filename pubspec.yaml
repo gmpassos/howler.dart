@@ -1,0 +1,15 @@
+name: howler
+description: Audio library for the modern web.
+version: 1.0.0
+homepage: https://www.example.com
+author: Graciliano M. Passos <gracilianomp@gmail.com>
+
+environment:
+  sdk: '>=2.1.0 <3.0.0'
+
+dependencies:
+ swiss_knife: ^2.0.0
+#  path: ^1.4.1
+
+dev_dependencies:
+  test: ^1.5.1
