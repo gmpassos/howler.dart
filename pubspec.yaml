@@ -1,7 +1,7 @@
 name: howler
 description: Audio library for the modern web.
 version: 1.0.1
-homepage: https://www.example.com
+homepage: https://github.com/gmpassos/howler.dart
 author: Graciliano M. Passos <gracilianomp@gmail.com>
 
 environment:
