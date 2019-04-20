@@ -32,11 +32,11 @@ class _HowlerGlobal {
   double _volume = 1;
   String _canPlayEvent = 'canplaythrough';
 
-  GainNode masterGain = null;
+  GainNode masterGain ;
   bool noAudio = false;
   bool usingWebAudio = true;
   bool autoSuspend = true;
-  AudioContext ctx = null;
+  AudioContext ctx ;
   String state ;
 
   // Set to false to disable the auto audio unlocker.
@@ -62,11 +62,9 @@ class _HowlerGlobal {
     return _navigator.vendor.contains('Apple') && new RegExp(r'iP(?:hone|ad|od)').hasMatch(_navigator.platform) ;
   }
 
-  /**
-   * Get/set the global volume for all sounds.
-   * @param  {Float} vol Volume from 0.0 to 1.0.
-   * @return {Howler/Float}     Returns current volume.
-   */
+  /// Get/set the global volume for all sounds.
+  /// @param  {Float} vol Volume from 0.0 to 1.0.
+  /// @return {Howler/Float}     Returns current volume.
   double volume([double vol]) {
 
 
@@ -109,10 +107,8 @@ class _HowlerGlobal {
     return this._volume;
   }
 
-  /**
-   * Handle muting and unmuting globally.
-   * @param  {Boolean} muted Is muted or not.
-   */
+  /// Handle muting and unmuting globally.
+  /// @param  {Boolean} muted Is muted or not.
   _HowlerGlobal mute(bool muted) {
 
 
@@ -148,10 +144,8 @@ class _HowlerGlobal {
     return this;
   }
 
-  /**
-   * Unload and destroy all currently loaded Howl objects.
-   * @return {Howler}
-   */
+  /// Unload and destroy all currently loaded Howl objects.
+  /// @return {Howler}
   _HowlerGlobal unload() {
 
 
@@ -169,21 +163,17 @@ class _HowlerGlobal {
     return this;
   }
 
-  /**
-   * Check for codec support of specific extension.
-   * @param  {String} ext Audio file extention.
-   * @return {bool}
-   */
+  /// Check for codec support of specific extension.
+  /// @param  {String} ext Audio file extention.
+  /// @return {bool}
   bool codecs(String ext) {
     ext = ext.replaceAll( new RegExp('^x-'), '') ;
     return this._codecs[ext] ;
   }
 
 
-  /**
-   * Setup various state values for global tracking.
-   * @return {Howler}
-   */
+  /// Setup various state values for global tracking.
+  /// @return {Howler}
   _HowlerGlobal _setup() {
 
 
@@ -223,10 +213,8 @@ class _HowlerGlobal {
   }
 
 
-  /**
-   * Check for browser support for various codecs and cache the results.
-   * @return {Howler}
-   */
+  /// Check for browser support for various codecs and cache the results.
+  /// @return {Howler}
   _HowlerGlobal _setupCodecs() {
 
     AudioElement audioTest = null;
@@ -276,12 +264,10 @@ class _HowlerGlobal {
   AudioBuffer _scratchBuffer ;
 
 
-  /**
-   * Some browsers/devices will only allow audio to be played after a user interaction.
-   * Attempt to automatically unlock audio on the first user interaction.
-   * Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
-   * @return {Howler}
-   */
+  /// Some browsers/devices will only allow audio to be played after a user interaction.
+  /// Attempt to automatically unlock audio on the first user interaction.
+  /// Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
+  /// @return {Howler}
   _HowlerGlobal _unlockAudio() {
 
 
@@ -392,11 +378,9 @@ class _HowlerGlobal {
   }
 
 
-  /**
-   * Get an unlocked HTML5 Audio object from the pool. If none are left,
-   * return a new Audio object and throw a warning.
-   * @return {Audio} HTML5 Audio object.
-   */
+  /// Get an unlocked HTML5 Audio object from the pool. If none are left,
+  /// return a new Audio object and throw a warning.
+  /// @return {Audio} HTML5 Audio object.
   AudioElement _obtainHtml5Audio() {
 
 
@@ -418,10 +402,8 @@ class _HowlerGlobal {
   }
 
 
-  /**
-   * Return an activated HTML5 Audio object to the pool.
-   * @return {Howler}
-   */
+  /// Return an activated HTML5 Audio object to the pool.
+  /// @return {Howler}
   _HowlerGlobal _releaseHtml5Audio(audio) {
 
 
@@ -436,11 +418,9 @@ class _HowlerGlobal {
   Timer _suspendTimer ;
   bool _resumeAfterSuspend = false ;
 
-  /**
-   * Automatically suspend the Web Audio AudioContext after no sound has played for 30 seconds.
-   * This saves processing/energy and fixes various browser-specific bugs with audio getting stuck.
-   * @return {Howler}
-   */
+  /// Automatically suspend the Web Audio AudioContext after no sound has played for 30 seconds.
+  /// This saves processing/energy and fixes various browser-specific bugs with audio getting stuck.
+  /// @return {Howler}
   _HowlerGlobal _autoSuspend() {
 
 
@@ -485,10 +465,8 @@ class _HowlerGlobal {
   }
 
 
-  /**
-   * Automatically resume the Web Audio AudioContext when a new sound is played.
-   * @return {Howler}
-   */
+  /// Automatically resume the Web Audio AudioContext when a new sound is played.
+  /// @return {Howler}
   _HowlerGlobal _autoResume() {
 
 
@@ -797,10 +775,8 @@ class Howl {
     return 'Howl{ playing: ${ this.playing() }, src: $_src, sounds: $_sounds}';
   }
 
-  /**
-   * Load the audio file.
-   * @return {Howler}
-   */
+  /// Load the audio file.
+  /// @return {Howler}
   Howl load() {
 
     String url = null;
@@ -880,12 +856,10 @@ class Howl {
   }
 
 
-  /**
-   * Play a sound or resume previous playback.
-   * @param  {String/Number} sprite   Sprite name for sprite playback or sound id to continue previous.
-   * @param  {Boolean} internal Internal Use: true prevents event firing.
-   * @return {Number}          Sound ID.
-   */
+  /// Play a sound or resume previous playback.
+  /// @param  {String/Number} sprite   Sprite name for sprite playback or sound id to continue previous.
+  /// @param  {Boolean} internal Internal Use: true prevents event firing.
+  /// @return {Number}          Sound ID.
   int play([dynamic sprite, bool internal = false]) {
 
     int id = null;
@@ -1161,11 +1135,9 @@ class Howl {
   }
 
 
-  /**
-   * Pause playback and save current position.
-   * @param  {Number} id The sound ID (empty to pause all in group).
-   * @return {Howl}
-   */
+  /// Pause playback and save current position.
+  /// @param  {Number} id The sound ID (empty to pause all in group).
+  /// @return {Howl}
   Howl pause(int id, [bool internal = false]) {
 
 
@@ -1238,12 +1210,10 @@ class Howl {
     return this ;
   }
 
-  /**
-   * Stop playback and reset to start.
-   * @param  {Number} id The sound ID (empty to stop all in group).
-   * @param  {Boolean} internal Internal Use: true prevents event firing.
-   * @return {Howl}
-   */
+  /// Stop playback and reset to start.
+  /// @param  {Number} id The sound ID (empty to stop all in group).
+  /// @param  {Boolean} internal Internal Use: true prevents event firing.
+  /// @return {Howl}
   Howl stop(int id, [bool internal = false]) {
 
 
@@ -1304,12 +1274,10 @@ class Howl {
   }
 
 
-  /**
-   * Mute/unmute a single sound or all sounds in this Howl group.
-   * @param  {Boolean} muted Set to true to mute and false to unmute.
-   * @param  {Number} id    The sound ID to update (omit to mute/unmute all).
-   * @return {Howl}
-   */
+  /// Mute/unmute a single sound or all sounds in this Howl group.
+  /// @param  {Boolean} muted Set to true to mute and false to unmute.
+  /// @param  {Number} id    The sound ID to update (omit to mute/unmute all).
+  /// @return {Howl}
   Howl mute(bool muted, [int id]) {
 
 
@@ -1363,12 +1331,10 @@ class Howl {
     return this;
   }
 
-  /**
-   * Get the volume of this sound or of the Howl group. This method can optionally take 0or 1 argument.
-   *   getVolume() -> Returns the group's volume value.
-   *   getVolume(id) -> Returns the sound id's current volume.
-   * @return {double} Returns current volume.
-   */
+  /// Get the volume of this sound or of the Howl group. This method can optionally take 0or 1 argument.
+  ///   getVolume() -> Returns the group's volume value.
+  ///   getVolume(id) -> Returns the sound id's current volume.
+  /// @return {double} Returns current volume.
   double getVolume([int id]) {
     // Determine the values based on arguments.
     if (id == null) {
@@ -1382,14 +1348,12 @@ class Howl {
   }
 
 
-  /**
-   * Get/set the volume of this sound or of the Howl group. This method can optionally take 0, 1 or 2 arguments.
-   *   volume() -> Returns the group's volume value.
-   *   volume(id) -> Returns the sound id's current volume.
-   *   volume(vol) -> Sets the volume of all sounds in this Howl group.
-   *   volume(vol, id) -> Sets the volume of passed sound id.
-   * @return {Howl} Returns this.
-   */
+  /// Get/set the volume of this sound or of the Howl group. This method can optionally take 0, 1 or 2 arguments.
+  ///   volume() -> Returns the group's volume value.
+  ///   volume(id) -> Returns the sound id's current volume.
+  ///   volume(vol) -> Sets the volume of all sounds in this Howl group.
+  ///   volume(vol, id) -> Sets the volume of passed sound id.
+  /// @return {Howl} Returns this.
   Howl setVolume(double vol, [int id, bool internal = false]) {
     if (vol == null || vol < 0 || vol > 1) return this ;
 
@@ -1439,14 +1403,12 @@ class Howl {
   }
 
 
-  /**
-   * Fade a currently playing sound between two volumes (if no id is passsed, all sounds will fade).
-   * @param  {Number} from The value to fade from (0.0 to 1.0).
-   * @param  {Number} to   The volume to fade to (0.0 to 1.0).
-   * @param  {Number} len  Time in milliseconds to fade.
-   * @param  {Number} id   The sound id (omit to fade all sounds).
-   * @return {Howl}
-   */
+  /// Fade a currently playing sound between two volumes (if no id is passsed, all sounds will fade).
+  /// @param  {Number} from The value to fade from (0.0 to 1.0).
+  /// @param  {Number} to   The volume to fade to (0.0 to 1.0).
+  /// @param  {Number} len  Time in milliseconds to fade.
+  /// @param  {Number} id   The sound id (omit to fade all sounds).
+  /// @return {Howl}
   Howl fade(double from, double to, int len, [int id]) {
 
 
@@ -1495,15 +1457,13 @@ class Howl {
   }
 
 
-  /**
-   * Starts the internal interval to fade a sound.
-   * @param  {Object} sound Reference to sound to fade.
-   * @param  {Number} from The value to fade from (0.0 to 1.0).
-   * @param  {Number} to   The volume to fade to (0.0 to 1.0).
-   * @param  {Number} len  Time in milliseconds to fade.
-   * @param  {Number} id   The sound id to fade.
-   * @param  {Boolean} isGroup   If true, set the volume on the group.
-   */
+  /// Starts the internal interval to fade a sound.
+  /// @param  {Object} sound Reference to sound to fade.
+  /// @param  {Number} from The value to fade from (0.0 to 1.0).
+  /// @param  {Number} to   The volume to fade to (0.0 to 1.0).
+  /// @param  {Number} len  Time in milliseconds to fade.
+  /// @param  {Number} id   The sound id to fade.
+  /// @param  {Boolean} isGroup   If true, set the volume on the group.
   void _startFadeInterval(Sound sound, double from, double to, int len, id, isGroup) {
 
 
@@ -1565,12 +1525,10 @@ class Howl {
 
   }
 
-  /**
-   * Internal method that stops the currently playing fade when
-   * a new fade starts, volume is changed or the sound is stopped.
-   * @param  {Number} id The sound id.
-   * @return {Howl}
-   */
+  /// Internal method that stops the currently playing fade when
+  /// a new fade starts, volume is changed or the sound is stopped.
+  /// @param  {Number} id The sound id.
+  /// @return {Howl}
   void _stopFade(int id) {
     Sound sound = this._soundById(id);
 
@@ -1590,12 +1548,10 @@ class Howl {
   }
 
 
-  /**
-   * Get the loop parameter on a sound. This method can optionally take 0, 1 or 2 arguments.
-   *   getLoop() -> Returns the group's loop value.
-   *   getLoop(id) -> Returns the sound id's loop value.
-   * @return {Boolean} Returns current loop value.
-   */
+  /// Get the loop parameter on a sound. This method can optionally take 0, 1 or 2 arguments.
+  ///   getLoop() -> Returns the group's loop value.
+  ///   getLoop(id) -> Returns the sound id's loop value.
+  /// @return {Boolean} Returns current loop value.
   bool getLoop([int id]) {
     // Determine the values for loop and id.
     if (id == null) {
@@ -1609,12 +1565,10 @@ class Howl {
   }
 
 
-  /**
-   * Set the loop parameter on a sound. This method can optionally take 0, 1 or 2 arguments.
-   *   setLoop(loop) -> Sets the loop value for all sounds in this Howl group.
-   *   setLoop(loop, id) -> Sets the loop value of passed sound id.
-   * @return {Howl} Returns this.
-   */
+  /// Set the loop parameter on a sound. This method can optionally take 0, 1 or 2 arguments.
+  ///   setLoop(loop) -> Sets the loop value for all sounds in this Howl group.
+  ///   setLoop(loop, id) -> Sets the loop value of passed sound id.
+  /// @return {Howl} Returns this.
   Howl setLoop(bool loop, [int id]) {
     if (id == null) {
       this._loop = loop;
@@ -1644,12 +1598,10 @@ class Howl {
   }
 
 
-  /**
-   * Get the playback rate of a sound. This method can optionally take 0, 1 or 2 arguments.
-   *   getRate() -> Returns the first sound node's current playback rate.
-   *   getRate(id) -> Returns the sound id's current playback rate.
-   * @return {double} Returns the current playback rate.
-   */
+  /// Get the playback rate of a sound. This method can optionally take 0, 1 or 2 arguments.
+  ///   getRate() -> Returns the first sound node's current playback rate.
+  ///   getRate(id) -> Returns the sound id's current playback rate.
+  /// @return {double} Returns the current playback rate.
   double getRate([int id]) {
     // Determine the values based on arguments.
     if (id == null) {
@@ -1663,12 +1615,10 @@ class Howl {
   }
 
 
-  /**
-   * Set the playback rate of a sound. This method can optionally take 0, 1 or 2 arguments.
-   *   setRate(rate) -> Sets the playback rate of all sounds in this Howl group.
-   *   setRate(rate, id) -> Sets the playback rate of passed sound id.
-   * @return {Howl} Returns this.
-   */
+  /// Set the playback rate of a sound. This method can optionally take 0, 1 or 2 arguments.
+  ///   setRate(rate) -> Sets the playback rate of all sounds in this Howl group.
+  ///   setRate(rate, id) -> Sets the playback rate of passed sound id.
+  /// @return {Howl} Returns this.
   Howl setRate(double rate, [int id]) {
     // If the sound hasn't loaded, add it to the load queue to change playback rate when capable.
     if (this._state != 'loaded' || this._playLock) {
@@ -1732,12 +1682,10 @@ class Howl {
   }
 
 
-  /**
-   * Get the seek position of a sound. This method can optionally take 0, 1 or 2 arguments.
-   *   getSeek() -> Returns the first sound node's current seek position.
-   *   getSeek(id) -> Returns the sound id's current seek position.
-   * @return {double} Returns the current seek position.
-   */
+  /// Get the seek position of a sound. This method can optionally take 0, 1 or 2 arguments.
+  ///   getSeek() -> Returns the first sound node's current seek position.
+  ///   getSeek(id) -> Returns the sound id's current seek position.
+  /// @return {double} Returns the current seek position.
   double getSeek([int id]) {
     // Determine the values based on arguments.
     if (id == null) {
@@ -1769,12 +1717,10 @@ class Howl {
   }
 
 
-  /**
-   * Set the seek position of a sound. This method can optionally take 0, 1 or 2 arguments.
-   *   setSeek(seek) -> Sets the seek position of the first sound node.
-   *   setSeek(seek, id) -> Sets the seek position of passed sound id.
-   * @return {Howl} Returns this.
-   */
+  /// Set the seek position of a sound. This method can optionally take 0, 1 or 2 arguments.
+  ///   setSeek(seek) -> Sets the seek position of the first sound node.
+  ///   setSeek(seek, id) -> Sets the seek position of passed sound id.
+  /// @return {Howl} Returns this.
   Howl setSeek(double seek, [int id]) {
     // Determine the values based on arguments.
     if (id == null) {
@@ -1846,11 +1792,9 @@ class Howl {
   }
 
 
-  /**
-   * Check if a specific sound is currently playing or not (if id is provided), or check if at least one of the sounds in the group is playing or not.
-   * @param  {Number}  id The sound id to check. If none is passed, the whole sound group is checked.
-   * @return {Boolean} True if playing and false if not.
-   */
+  /// Check if a specific sound is currently playing or not (if id is provided), or check if at least one of the sounds in the group is playing or not.
+  /// @param  {Number}  id The sound id to check. If none is passed, the whole sound group is checked.
+  /// @return {Boolean} True if playing and false if not.
   bool playing([int id]) {
     // Check the passed sound ID (if any).
     if (id != null) {
@@ -1869,11 +1813,9 @@ class Howl {
   }
 
 
-  /**
-   * Get the duration of this sound. Passing a sound id will return the sprite duration.
-   * @param  {Number} id The sound id to check. If none is passed, return full source duration.
-   * @return {Number} Audio duration in seconds.
-   */
+  /// Get the duration of this sound. Passing a sound id will return the sprite duration.
+  /// @param  {Number} id The sound id to check. If none is passed, return full source duration.
+  /// @return {Number} Audio duration in seconds.
   double duration([int id]) {
     if (id == null) {
       return this._duration;
@@ -1891,19 +1833,15 @@ class Howl {
   }
 
 
-  /**
-   * Returns the current loaded state of this Howl.
-   * @return {String} 'unloaded', 'loading', 'loaded'
-   */
+  /// Returns the current loaded state of this Howl.
+  /// @return {String} 'unloaded', 'loading', 'loaded'
   String state() {
     return this._state;
   }
 
 
-  /**
-   * Unload and destroy the current Howl object.
-   * This will immediately stop all sound instances attached to this group.
-   */
+  /// Unload and destroy the current Howl object.
+  /// This will immediately stop all sound instances attached to this group.
   void unload() {
     // Stop playing any active sounds.
     List<Sound> sss = this._sounds ;
@@ -1971,14 +1909,12 @@ class Howl {
   }
 
 
-  /**
-   * Listen to a custom event.
-   * @param  {String}   event Event name.
-   * @param  {Function} fn    Listener to call.
-   * @param  {Number}   id    (optional) Only listen to events for this sound.
-   * @param  {Number}   once  (INTERNAL) Marks event to fire only once.
-   * @return {Howl}
-   */
+  /// Listen to a custom event.
+  /// @param  {String}   event Event name.
+  /// @param  {Function} fn    Listener to call.
+  /// @param  {Number}   id    (optional) Only listen to events for this sound.
+  /// @param  {Number}   once  (INTERNAL) Marks event to fire only once.
+  /// @return {Howl}
   Howl on(String eventType, HowlEventListener function, int id, [bool once = false]) {
 
     var events = this._getEventListeners(eventType) ;
@@ -1987,13 +1923,11 @@ class Howl {
     return this;
   }
 
-  /**
-   * Remove a custom event. Call without parameters to remove all events.
-   * @param  {String}   event Event name.
-   * @param  {Function} fn    Listener to remove. Leave empty to remove all.
-   * @param  {Number}   id    (optional) Only remove events for this sound.
-   * @return {Howl}
-   */
+  /// Remove a custom event. Call without parameters to remove all events.
+  /// @param  {String}   event Event name.
+  /// @param  {Function} fn    Listener to remove. Leave empty to remove all.
+  /// @param  {Number}   id    (optional) Only remove events for this sound.
+  /// @return {Howl}
   Howl off(String eventType, [int id, HowlEventListener function]) {
     var events = this._getEventListeners(eventType) ;
     var i = 0;
@@ -2035,13 +1969,11 @@ class Howl {
   }
 
 
-  /**
-   * Listen to a custom event and remove it once fired.
-   * @param  {String}   event Event name.
-   * @param  {Function} fn    Listener to call.
-   * @param  {Number}   id    (optional) Only listen to events for this sound.
-   * @return {Howl}
-   */
+  /// Listen to a custom event and remove it once fired.
+  /// @param  {String}   event Event name.
+  /// @param  {Function} fn    Listener to call.
+  /// @param  {Number}   id    (optional) Only listen to events for this sound.
+  /// @return {Howl}
   Howl once(String event, HowlEventListener function, int id) {
     this.on(event, function, id, true);
     return this;
@@ -2049,10 +1981,8 @@ class Howl {
 
   final Map<_HowlSrc,AudioBuffer> _cache = {};
 
-  /**
-   * Buffer a sound from URL, Data URI or cache and decode to audio source (Web Audio API).
-   * @param  {Howl} this
-   */
+  /// Buffer a sound from URL, Data URI or cache and decode to audio source (Web Audio API).
+  /// @param  {Howl} this
   void _loadBuffer() {
     String url = this._src[0] ;
 
@@ -2105,11 +2035,9 @@ class Howl {
   }
 
 
-  /**
-   * Decode audio data from an array buffer.
-   * @param  {ArrayBuffer} arraybuffer The audio data.
-   * @param  {Howl}        this
-   */
+  /// Decode audio data from an array buffer.
+  /// @param  {ArrayBuffer} arraybuffer The audio data.
+  /// @param  {Howl}        this
   void _decodeAudioData(ByteBuffer arraybuffer) {
     // Fire a load error if something broke.
     var error = () {
@@ -2132,11 +2060,9 @@ class Howl {
   }
 
 
-  /**
-   * Sound is now loaded, so finish setting everything up and fire the loaded event.
-   * @param  {Howl} this
-   * @param  {Object} buffer The decoded buffer sound source.
-   */
+  /// Sound is now loaded, so finish setting everything up and fire the loaded event.
+  /// @param  {Howl} this
+  /// @param  {Object} buffer The decoded buffer sound source.
   void _loadSound(AudioBuffer buffer) {
     // Set the duration.
     if (buffer != null && (this._duration == null || this._duration == 0) ) {
@@ -2157,13 +2083,11 @@ class Howl {
   }
 
 
-  /**
-   * Emit all events of a specific type and pass the sound id.
-   * @param  {String} event Event name.
-   * @param  {Number} id    Sound ID.
-   * @param  {Number} msg   Message to go with event.
-   * @return {Howl}
-   */
+  /// Emit all events of a specific type and pass the sound id.
+  /// @param  {String} event Event name.
+  /// @param  {Number} id    Sound ID.
+  /// @param  {Number} msg   Message to go with event.
+  /// @return {Howl}
   void _emit(String eventType, [int id, String msg]) {
     List<_HowlEventListenerWrapper> events = _getEventListeners(eventType) ;
     List<_HowlEventListenerWrapper> offEvents ;
@@ -2196,12 +2120,10 @@ class Howl {
     this._loadQueue(eventType);
   }
 
-  /**
-   * Queue of actions initiated before the sound has loaded.
-   * These will be called in sequence, with the next only firing
-   * after the previous has finished executing (even if async like play).
-   * @return {Howl}
-   */
+  /// Queue of actions initiated before the sound has loaded.
+  /// These will be called in sequence, with the next only firing
+  /// after the previous has finished executing (even if async like play).
+  /// @return {Howl}
   void _loadQueue([String event]) {
     if (this._queue.length > 0) {
       _HowlCall task = this._queue[0];
@@ -2219,11 +2141,9 @@ class Howl {
   }
 
 
-  /**
-   * Fired when playback ends at the end of the duration.
-   * @param  {Sound} sound The sound object to work with.
-   * @return {Howl}
-   */
+  /// Fired when playback ends at the end of the duration.
+  /// @param  {Sound} sound The sound object to work with.
+  /// @return {Howl}
   void _ended(Sound sound) {
     var sprite = sound._sprite;
 
@@ -2284,11 +2204,9 @@ class Howl {
     }
   }
 
-  /**
-   * Clear the end timer for a sound playback.
-   * @param  {Number} id The sound ID.
-   * @return {Howl}
-   */
+  /// Clear the end timer for a sound playback.
+  /// @param  {Number} id The sound ID.
+  /// @return {Howl}
   void _clearTimer(id) {
     var endTimer = this._endTimers[id];
 
@@ -2308,11 +2226,9 @@ class Howl {
     }
   }
 
-  /**
-   * Return the sound identified by this ID, or return null.
-   * @param  {Number} id Sound ID
-   * @return {Object}    Sound object or null.
-   */
+  /// Return the sound identified by this ID, or return null.
+  /// @param  {Number} id Sound ID
+  /// @return {Object}    Sound object or null.
   Sound _soundById(int id) {
     // Loop through all sounds and find the one with this ID.
     for (var i=0; i<this._sounds.length; i++) {
@@ -2324,10 +2240,8 @@ class Howl {
   }
 
 
-  /**
-   * Return an inactive sound from the pool or create a new one.
-   * @return {Sound} Sound playback object.
-   */
+  /// Return an inactive sound from the pool or create a new one.
+  /// @return {Sound} Sound playback object.
   Sound _inactiveSound() {
     this._drain();
 
@@ -2345,9 +2259,7 @@ class Howl {
   }
 
 
-  /**
-   * Drain excess inactive sounds from the pool.
-   */
+  /// Drain excess inactive sounds from the pool.
   void _drain() {
     var limit = this._pool;
     var cnt = 0;
@@ -2384,11 +2296,9 @@ class Howl {
   }
 
 
-  /**
-   * Get all ID's from the sounds pool.
-   * @param  {Number} id Only return one ID if one is passed.
-   * @return {Array}    Array of IDs.
-   */
+  /// Get all ID's from the sounds pool.
+  /// @param  {Number} id Only return one ID if one is passed.
+  /// @return {Array}    Array of IDs.
   List<int> _getSoundIds([int id]) {
     if (id == null) {
       List<int> ids = [];
@@ -2405,11 +2315,9 @@ class Howl {
   }
 
 
-  /**
-   * Load the sound back into the buffer source.
-   * @param  {Sound} sound The sound object to work with.
-   * @return {Howl}
-   */
+  /// Load the sound back into the buffer source.
+  /// @param  {Sound} sound The sound object to work with.
+  /// @return {Howl}
   void _refreshBuffer(Sound sound) {
     // Setup the buffer source for playback.
     sound._node.bufferSource = Howler.ctx.createBufferSource();
@@ -2433,11 +2341,9 @@ class Howl {
   }
 
 
-  /**
-   * Prevent memory leaks by cleaning up the buffer source after playback.
-   * @param  {Object} node Sound's audio node containing the buffer source.
-   * @return {Howl}
-   */
+  /// Prevent memory leaks by cleaning up the buffer source after playback.
+  /// @param  {Object} node Sound's audio node containing the buffer source.
+  /// @return {Howl}
   void _cleanBuffer(_HowlAudioNode node) {
     if (Howler._scratchBuffer != null && node.bufferSource != null ) {
       //node.bufferSource.onEnded = null ; TODO
@@ -2526,10 +2432,8 @@ class Sound {
   }
 
 
-  /**
-   * Create and setup a new sound object, whether HTML5 Audio or Web Audio.
-   * @return {Sound}
-   */
+  /// Create and setup a new sound object, whether HTML5 Audio or Web Audio.
+  /// @return {Sound}
   Sound create() {
 
     var parent = this._parent;
@@ -2568,10 +2472,8 @@ class Sound {
   }
 
 
-  /**
-   * Reset the parameters of this sound to the original state (for recycle).
-   * @return {Sound}
-   */
+  /// Reset the parameters of this sound to the original state (for recycle).
+  /// @return {Sound}
   Sound reset() {
 
     var parent = this._parent;
@@ -2593,9 +2495,7 @@ class Sound {
     return this;
   }
 
-  /**
-   * HTML5 Audio error listener callback.
-   */
+  /// HTML5 Audio error listener callback.
   void _errorListener(_) {
 
 
@@ -2607,9 +2507,7 @@ class Sound {
   }
 
 
-  /**
-   * HTML5 Audio canplaythrough listener callback.
-   */
+  /// HTML5 Audio canplaythrough listener callback.
   void _loadListener(_) {
 
     var parent = this._parent;
@@ -2655,9 +2553,7 @@ class Sound {
 }
 
 
-/**
- * Setup the audio context when available, or switch to HTML5 Audio mode.
- */
+/// Setup the audio context when available, or switch to HTML5 Audio mode.
 void _setupAudioContext() {
   // If we have already detected that Web Audio isn't supported, don't run this step again.
   if (!Howler.usingWebAudio) return;
