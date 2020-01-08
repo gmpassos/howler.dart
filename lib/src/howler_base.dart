@@ -15,7 +15,7 @@ import 'dart:typed_data';
 import 'dart:web_audio';
 import 'dart:convert' show base64;
 
-import 'package:swiss_knife/swiss_knife_utils.dart';
+import 'package:swiss_knife/swiss_knife.dart';
 
 class _HowlerGlobal {
   // Create a global ID counter.
