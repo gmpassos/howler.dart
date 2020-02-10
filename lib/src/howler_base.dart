@@ -26,55 +26,53 @@ class _HowlerGlobal {
   int html5PoolSize = 10;
 
   // Internal properties.
-  Map<String,bool> _codecs = {};
+  Map<String, bool> _codecs = {};
   List<Howl> _howls = [];
   bool _muted = false;
   double _volume = 1;
   String _canPlayEvent = 'canplaythrough';
 
-  GainNode masterGain ;
+  GainNode masterGain;
   bool noAudio = false;
   bool usingWebAudio = true;
   bool autoSuspend = true;
-  AudioContext ctx ;
-  String state ;
+  AudioContext ctx;
+  String state;
 
   // Set to false to disable the auto audio unlocker.
   bool autoUnlock = true;
 
-  Navigator _navigator ;
+  Navigator _navigator;
 
-  String get userAgent => _navigator != null ? _navigator.userAgent : "" ;
+  String get userAgent => _navigator != null ? _navigator.userAgent : "";
 
-  bool _ios ;
-  bool get isIOS => _ios ;
+  bool _ios;
+  bool get isIOS => _ios;
 
   _HowlerGlobal() {
-    this._navigator = window.navigator ;
+    this._navigator = window.navigator;
 
-    this._ios = _calcIsIOS() ;
+    this._ios = _calcIsIOS();
 
     // Setup the various state values for global tracking.
     this._setup();
   }
 
   bool _calcIsIOS() {
-    return _navigator.vendor.contains('Apple') && new RegExp(r'iP(?:hone|ad|od)').hasMatch(_navigator.platform) ;
+    return _navigator.vendor.contains('Apple') && new RegExp(r'iP(?:hone|ad|od)').hasMatch(_navigator.platform);
   }
 
   /// Get/set the global volume for all sounds.
   /// @param  {Float} vol Volume from 0.0 to 1.0.
   /// @return {Howler/Float}     Returns current volume.
   double volume([double vol]) {
-
-
     // If we don't have an AudioContext created yet, run the setup.
-    if ( this.ctx == null ) {
+    if (this.ctx == null) {
       _setupAudioContext();
     }
 
     if (vol != null && vol >= 0 && vol <= 1) {
-      this._volume = vol ;
+      this._volume = vol;
 
       // Don't update any of the nodes if we are muted.
       if (this._muted) {
@@ -87,13 +85,13 @@ class _HowlerGlobal {
       }
 
       // Loop through and change volume for all HTML5 audio nodes.
-      for (var i=0; i<this._howls.length; i++) {
+      for (var i = 0; i < this._howls.length; i++) {
         if (!this._howls[i]._webAudio) {
           // Get all of the sounds in this Howl group.
           var ids = this._howls[i]._getSoundIds();
 
           // Loop through all sounds and change the volumes.
-          for (var j=0; j<ids.length; j++) {
+          for (var j = 0; j < ids.length; j++) {
             Sound sound = this._howls[i]._soundById(ids[j]);
 
             if (sound != null && sound._node != null) {
@@ -110,10 +108,8 @@ class _HowlerGlobal {
   /// Handle muting and unmuting globally.
   /// @param  {Boolean} muted Is muted or not.
   _HowlerGlobal mute(bool muted) {
-
-
     // If we don't have an AudioContext created yet, run the setup.
-    if ( this.ctx == null ) {
+    if (this.ctx == null) {
       _setupAudioContext();
     }
 
@@ -125,13 +121,13 @@ class _HowlerGlobal {
     }
 
     // Loop through and mute all HTML5 Audio nodes.
-    for (var i=0; i<this._howls.length; i++) {
+    for (var i = 0; i < this._howls.length; i++) {
       if (!this._howls[i]._webAudio) {
         // Get all of the sounds in this Howl group.
         var ids = this._howls[i]._getSoundIds();
 
         // Loop through all sounds and mark the audio node as muted.
-        for (var j=0; j<ids.length; j++) {
+        for (var j = 0; j < ids.length; j++) {
           Sound sound = this._howls[i]._soundById(ids[j]);
 
           if (sound != null && sound._node != null) {
@@ -147,14 +143,12 @@ class _HowlerGlobal {
   /// Unload and destroy all currently loaded Howl objects.
   /// @return {Howler}
   _HowlerGlobal unload() {
-
-
-    for (var i=this._howls.length-1; i>=0; i--) {
+    for (var i = this._howls.length - 1; i >= 0; i--) {
       this._howls[i].unload();
     }
 
     // Create a new AudioContext to make sure it is fully reset.
-    if ( this.usingWebAudio && this.ctx != null && this.ctx.close != null ) {
+    if (this.usingWebAudio && this.ctx != null && this.ctx.close != null) {
       this.ctx.close();
       this.ctx = null;
       _setupAudioContext();
@@ -167,19 +161,16 @@ class _HowlerGlobal {
   /// @param  {String} ext Audio file extention.
   /// @return {bool}
   bool codecs(String ext) {
-    ext = ext.replaceAll( new RegExp('^x-'), '') ;
-    return this._codecs[ext] ;
+    ext = ext.replaceAll(new RegExp('^x-'), '');
+    return this._codecs[ext];
   }
-
 
   /// Setup various state values for global tracking.
   /// @return {Howler}
   _HowlerGlobal _setup() {
-
-
     // Keeps track of the suspend/resume state of the AudioContext.
-    this.state = this.ctx != null ? this.ctx.state : null ;
-    if (this.state == null) this.state = 'suspended' ;
+    this.state = this.ctx != null ? this.ctx.state : null;
+    if (this.state == null) this.state = 'suspended';
 
     // Automatically begin the 30-second suspend process
     this._autoSuspend();
@@ -188,9 +179,8 @@ class _HowlerGlobal {
     if (!this.usingWebAudio) {
       // No audio is available on this system if noAudio is set to true.
       try {
-        new AudioElement() ;
-      }
-      catch(e) {
+        new AudioElement();
+      } catch (e) {
         this.noAudio = true;
         print("** NO AUDIO AVAILABLE!");
       }
@@ -212,40 +202,37 @@ class _HowlerGlobal {
     return this;
   }
 
-
   /// Check for browser support for various codecs and cache the results.
   /// @return {Howler}
   _HowlerGlobal _setupCodecs() {
-
     AudioElement audioTest = null;
 
     // Must wrap in a try/catch because IE11 in server mode throws an error.
     try {
-      audioTest = new AudioElement() ;
-    }
-    catch (err) {
+      audioTest = new AudioElement();
+    } catch (err) {
       return this;
     }
 
-    if ( audioTest == null ) return this;
+    if (audioTest == null) return this;
 
-    bool mpegTest = canPlayType(audioTest, 'audio/mpeg;') ;
+    bool mpegTest = canPlayType(audioTest, 'audio/mpeg;');
 
     this._codecs = {
-      'mp3': (mpegTest || canPlayType(audioTest,'audio/mp3;') ) ,
+      'mp3': (mpegTest || canPlayType(audioTest, 'audio/mp3;')),
       'mpeg': mpegTest,
-      'opus': canPlayType(audioTest, 'audio/ogg; codecs="opus"') ,
-      'ogg': canPlayType(audioTest, 'audio/ogg; codecs="vorbis"') ,
-      'oga': canPlayType(audioTest, 'audio/ogg; codecs="vorbis"') ,
-      'wav': canPlayType(audioTest, 'audio/wav; codecs="1"') ,
-      'aac': canPlayType(audioTest, 'audio/aac;') ,
-      'caf': canPlayType(audioTest, 'audio/x-caf;') ,
-      'm4a': canPlayType(audioTest, 'audio/x-m4a;') || canPlayType(audioTest, 'audio/m4a;') || canPlayType(audioTest, 'audio/aac;') ,
-      'mp4': canPlayType(audioTest, 'audio/x-mp4;') || canPlayType(audioTest, 'audio/mp4;') || canPlayType(audioTest, 'audio/aac;') ,
-      'weba': canPlayType(audioTest, 'audio/webm; codecs="vorbis"') ,
-      'webm': canPlayType(audioTest, 'audio/webm; codecs="vorbis"') ,
-      'dolby': canPlayType(audioTest, 'audio/mp4; codecs="ec-3"') ,
-      'flac': canPlayType(audioTest, 'audio/x-flac;') || canPlayType(audioTest,'audio/flac;')
+      'opus': canPlayType(audioTest, 'audio/ogg; codecs="opus"'),
+      'ogg': canPlayType(audioTest, 'audio/ogg; codecs="vorbis"'),
+      'oga': canPlayType(audioTest, 'audio/ogg; codecs="vorbis"'),
+      'wav': canPlayType(audioTest, 'audio/wav; codecs="1"'),
+      'aac': canPlayType(audioTest, 'audio/aac;'),
+      'caf': canPlayType(audioTest, 'audio/x-caf;'),
+      'm4a': canPlayType(audioTest, 'audio/x-m4a;') || canPlayType(audioTest, 'audio/m4a;') || canPlayType(audioTest, 'audio/aac;'),
+      'mp4': canPlayType(audioTest, 'audio/x-mp4;') || canPlayType(audioTest, 'audio/mp4;') || canPlayType(audioTest, 'audio/aac;'),
+      'weba': canPlayType(audioTest, 'audio/webm; codecs="vorbis"'),
+      'webm': canPlayType(audioTest, 'audio/webm; codecs="vorbis"'),
+      'dolby': canPlayType(audioTest, 'audio/mp4; codecs="ec-3"'),
+      'flac': canPlayType(audioTest, 'audio/x-flac;') || canPlayType(audioTest, 'audio/flac;')
     };
 
     return this;
@@ -253,29 +240,26 @@ class _HowlerGlobal {
 
   static bool canPlayType(AudioElement audioTest, String type) {
     var canPlayType = audioTest.canPlayType('audio/mp3;');
-    if (canPlayType == null || canPlayType.isEmpty) return false ;
-    canPlayType = canPlayType.toLowerCase() ;
-    return canPlayType != 'no' ;
+    if (canPlayType == null || canPlayType.isEmpty) return false;
+    canPlayType = canPlayType.toLowerCase();
+    return canPlayType != 'no';
   }
 
-
-  bool _audioUnlocked = false ;
-  bool _mobileUnloaded = false ;
-  AudioBuffer _scratchBuffer ;
-
+  bool _audioUnlocked = false;
+  bool _mobileUnloaded = false;
+  AudioBuffer _scratchBuffer;
 
   /// Some browsers/devices will only allow audio to be played after a user interaction.
   /// Attempt to automatically unlock audio on the first user interaction.
   /// Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
   /// @return {Howler}
   _HowlerGlobal _unlockAudio() {
-
-
     // Only run this on certain browsers/devices.
 
-    var shouldUnlock = new RegExp('iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome|Safari', caseSensitive: false).hasMatch( this.userAgent ) ;
+    var shouldUnlock =
+        new RegExp('iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome|Safari', caseSensitive: false).hasMatch(this.userAgent);
 
-    if (this._audioUnlocked || this.ctx != null || !shouldUnlock) return this ;
+    if (this._audioUnlocked || this.ctx != null || !shouldUnlock) return this;
 
     this._audioUnlocked = false;
     this.autoUnlock = false;
@@ -300,13 +284,10 @@ class _HowlerGlobal {
     return this;
   }
 
-
   // Call this method on touch start to create and play a buffer,
   // then check if the audio actually played to determine if
   // audio has now been unlocked on iOS, Android, etc.
   void _unlock(e) {
-
-
     // Create a pool of unlocked HTML5 Audio objects that can
     // be used for playing sounds without user interaction. HTML5
     // Audio objects must be individually unlocked, as opposed
@@ -318,7 +299,7 @@ class _HowlerGlobal {
 
       // Mark this Audio object as unlocked to ensure it can get returned
       // to the unlocked pool when released.
-      audioNode.setAttribute('_unlocked', 'true') ;
+      audioNode.setAttribute('_unlocked', 'true');
 
       // Add the audio node to the pool.
       this._releaseHtml5Audio(audioNode);
@@ -374,19 +355,15 @@ class _HowlerGlobal {
         this._howls[i]._emit('unlock');
       }
     });
-
   }
-
 
   /// Get an unlocked HTML5 Audio object from the pool. If none are left,
   /// return a new Audio object and throw a warning.
   /// @return {Audio} HTML5 Audio object.
   AudioElement _obtainHtml5Audio() {
-
-
     // Return the next object from the pool if one exists.
-    if ( this._html5AudioPool.isNotEmpty ) {
-      return this._html5AudioPool.removeLast() ;
+    if (this._html5AudioPool.isNotEmpty) {
+      return this._html5AudioPool.removeLast();
     }
 
     //.Check if the audio is locked and throw a warning.
@@ -394,19 +371,16 @@ class _HowlerGlobal {
 
     if (testPlay != null) {
       testPlay.catchError((_) {
-        window.console.warn( 'HTML5 Audio pool exhausted, returning potentially locked audio object.' ) ;
+        window.console.warn('HTML5 Audio pool exhausted, returning potentially locked audio object.');
       });
     }
 
     return new AudioElement();
   }
 
-
   /// Return an activated HTML5 Audio object to the pool.
   /// @return {Howler}
   _HowlerGlobal _releaseHtml5Audio(audio) {
-
-
     // Don't add audio to the pool if we don't know if it has been unlocked.
     if (audio._unlocked) {
       this._html5AudioPool.add(audio);
@@ -415,23 +389,21 @@ class _HowlerGlobal {
     return this;
   }
 
-  Timer _suspendTimer ;
-  bool _resumeAfterSuspend = false ;
+  Timer _suspendTimer;
+  bool _resumeAfterSuspend = false;
 
   /// Automatically suspend the Web Audio AudioContext after no sound has played for 30 seconds.
   /// This saves processing/energy and fixes various browser-specific bugs with audio getting stuck.
   /// @return {Howler}
   _HowlerGlobal _autoSuspend() {
-
-
-    if (!this.autoSuspend || this.ctx == null || !Howler.usingWebAudio ) {
-      return this ;
+    if (!this.autoSuspend || this.ctx == null || !Howler.usingWebAudio) {
+      return this;
     }
 
     // Check if any sounds are playing.
-    for (var i=0; i<this._howls.length; i++) {
+    for (var i = 0; i < this._howls.length; i++) {
       if (this._howls[i]._webAudio) {
-        for (var j=0; j<this._howls[i]._sounds.length; j++) {
+        for (var j = 0; j < this._howls[i]._sounds.length; j++) {
           if (!this._howls[i]._sounds[j]._paused) {
             return this;
           }
@@ -440,12 +412,11 @@ class _HowlerGlobal {
     }
 
     if (this._suspendTimer != null) {
-      this._suspendTimer.cancel() ;
-      this._suspendTimer = null ;
+      this._suspendTimer.cancel();
+      this._suspendTimer = null;
     }
 
-
-    this._suspendTimer = new Timer(new Duration(seconds: 30), (){
+    this._suspendTimer = new Timer(new Duration(seconds: 30), () {
       if (!this.autoSuspend) return;
 
       this._suspendTimer = null;
@@ -454,36 +425,32 @@ class _HowlerGlobal {
       this.ctx.suspend().then((_) {
         this.state = 'suspended';
 
-        if ( this._resumeAfterSuspend ) {
-          this._resumeAfterSuspend = false ;
+        if (this._resumeAfterSuspend) {
+          this._resumeAfterSuspend = false;
           this._autoResume();
         }
       });
-    }) ;
+    });
 
     return this;
   }
 
-
   /// Automatically resume the Web Audio AudioContext when a new sound is played.
   /// @return {Howler}
   _HowlerGlobal _autoResume() {
-
-
-    if (this.ctx == null || !Howler.usingWebAudio ) {
-      return this ;
+    if (this.ctx == null || !Howler.usingWebAudio) {
+      return this;
     }
 
-    if ( this.state == 'running' && this._suspendTimer != null) {
+    if (this.state == 'running' && this._suspendTimer != null) {
       this._suspendTimer.cancel();
       this._suspendTimer = null;
-    }
-    else if (this.state == 'suspended') {
+    } else if (this.state == 'suspended') {
       this.ctx.resume().then((_) {
         this.state = 'running';
 
         // Emit to all Howls that the audio has resumed.
-        for (int i=0; i < this._howls.length; i++) {
+        for (int i = 0; i < this._howls.length; i++) {
           this._howls[i]._emit('resume');
         }
       });
@@ -492,15 +459,12 @@ class _HowlerGlobal {
         this._suspendTimer.cancel();
         this._suspendTimer = null;
       }
-
-    }
-    else if (this.state == 'suspending') {
-      this._resumeAfterSuspend = true ;
+    } else if (this.state == 'suspending') {
+      this._resumeAfterSuspend = true;
     }
 
     return this;
   }
-
 }
 
 final _HowlerGlobal Howler = new _HowlerGlobal();
@@ -508,36 +472,33 @@ final _HowlerGlobal Howler = new _HowlerGlobal();
 typedef HowlEventListener(Howl howl, String eventType, int id, String message);
 
 class _HowlEventListenerWrapper {
-  final int id ;
+  final int id;
   final HowlEventListener function;
   final bool once;
 
-  _HowlEventListenerWrapper(this.function, [this.id, this.once = false]) ;
+  _HowlEventListenerWrapper(this.function, [this.id, this.once = false]);
 }
 
 class _HowlSrc {
-  List<String> _srcs ;
+  List<String> _srcs;
 
   _HowlSrc.value(String src) {
-    this._srcs = [src] ;
+    this._srcs = [src];
   }
 
   _HowlSrc.list(this._srcs) {
-    if (this._srcs == null) this._srcs = [] ;
+    if (this._srcs == null) this._srcs = [];
   }
 
-  int get length => _srcs.length ;
+  int get length => _srcs.length;
 
-  String operator [](int index) => _srcs[index] ;
+  String operator [](int index) => _srcs[index];
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-          other is _HowlSrc &&
-              runtimeType == other.runtimeType &&
-              isEquivalentList( _srcs , other._srcs ) ;
+      identical(this, other) || other is _HowlSrc && runtimeType == other.runtimeType && isEquivalentList(_srcs, other._srcs);
 
-  int _hashcode ;
+  int _hashcode;
 
   @override
   int get hashCode {
@@ -546,177 +507,181 @@ class _HowlSrc {
       for (var s in _srcs) {
         h = h * 31 + s.hashCode;
       }
-      _hashcode = h ;
+      _hashcode = h;
     }
 
-    return _hashcode ;
+    return _hashcode;
   }
 
   @override
   String toString() {
-    return _srcs.toString() ;
+    return _srcs.toString();
   }
-
-
 }
 
 class _HowlSpriteParams {
-  int from ;
-  int to ;
-  bool loop ;
+  int from;
+  int to;
+  bool loop;
 
-  _HowlSpriteParams(this.from, this.to, [ this.loop = false ]);
+  _HowlSpriteParams(this.from, this.to, [this.loop = false]);
 
   _HowlSpriteParams.list(List params) {
-    this.from = int.parse( params[0].toString() ) ;
-    this.to = int.parse( params[1].toString() ) ;
+    this.from = int.parse(params[0].toString());
+    this.to = int.parse(params[1].toString());
 
-    if ( params.length <= 2 ) {
-      this.loop = false ;
-    }
-    else {
-      String loopStr = params[2].toString().toLowerCase() ;
-      this.loop = loopStr == 'true' || loopStr == '1' ;
+    if (params.length <= 2) {
+      this.loop = false;
+    } else {
+      String loopStr = params[2].toString().toLowerCase();
+      this.loop = loopStr == 'true' || loopStr == '1';
     }
   }
 
-  static Map<String, _HowlSpriteParams> toMapOfSpritesParams(Map<String,List> map) {
-    Map<String, _HowlSpriteParams> sprites = {} ;
+  static Map<String, _HowlSpriteParams> toMapOfSpritesParams(Map<String, List> map) {
+    Map<String, _HowlSpriteParams> sprites = {};
 
     for (var entry in map.entries) {
-      String key = entry.key ;
-      var spriteParams = new _HowlSpriteParams.list( entry.value ) ;
-      sprites[key] = spriteParams ;
+      String key = entry.key;
+      var spriteParams = new _HowlSpriteParams.list(entry.value);
+      sprites[key] = spriteParams;
     }
 
-    return sprites ;
+    return sprites;
   }
 }
 
 class _HowlCall {
-  final String event ;
-  final Function action ;
+  final String event;
+  final Function action;
 
   _HowlCall(this.event, this.action);
-
 }
 
 class Howl {
+  bool _autoplay;
+  List<String> _format;
+  bool _html5;
+  bool _muted;
+  bool _loop;
+  int _pool;
+  bool _preload;
+  double _rate;
+  Map<String, _HowlSpriteParams> _sprite;
+  _HowlSrc _src;
+  double _volume;
+  bool _xhrWithCredentials;
 
-  bool _autoplay ;
-  List<String> _format ;
-  bool _html5 ;
-  bool _muted ;
-  bool _loop ;
-  int _pool ;
-  bool _preload ;
-  double _rate ;
-  Map<String,_HowlSpriteParams> _sprite ;
-  _HowlSrc _src ;
-  double _volume ;
-  bool _xhrWithCredentials ;
-
-  double _duration ;
-  String _state ;
-  List<Sound> _sounds ;
-  Map<int,dynamic> _endTimers ;
-  List<_HowlCall> _queue ;
-  bool _playLock ;
+  double _duration;
+  String _state;
+  List<Sound> _sounds;
+  Map<int, dynamic> _endTimers;
+  List<_HowlCall> _queue;
+  bool _playLock;
 
   // Setup event listeners.
-  List<_HowlEventListenerWrapper> _onend ;
-  List<_HowlEventListenerWrapper> _onfade ;
-  List<_HowlEventListenerWrapper> _onload ;
-  List<_HowlEventListenerWrapper> _onloaderror ;
-  List<_HowlEventListenerWrapper> _onplayerror ;
-  List<_HowlEventListenerWrapper> _onpause ;
-  List<_HowlEventListenerWrapper> _onplay ;
-  List<_HowlEventListenerWrapper> _onstop ;
-  List<_HowlEventListenerWrapper> _onmute ;
-  List<_HowlEventListenerWrapper> _onvolume ;
-  List<_HowlEventListenerWrapper> _onrate ;
-  List<_HowlEventListenerWrapper> _onseek ;
-  List<_HowlEventListenerWrapper> _onunlock ;
-  List<_HowlEventListenerWrapper> _onresume ;
+  List<_HowlEventListenerWrapper> _onend;
+  List<_HowlEventListenerWrapper> _onfade;
+  List<_HowlEventListenerWrapper> _onload;
+  List<_HowlEventListenerWrapper> _onloaderror;
+  List<_HowlEventListenerWrapper> _onplayerror;
+  List<_HowlEventListenerWrapper> _onpause;
+  List<_HowlEventListenerWrapper> _onplay;
+  List<_HowlEventListenerWrapper> _onstop;
+  List<_HowlEventListenerWrapper> _onmute;
+  List<_HowlEventListenerWrapper> _onvolume;
+  List<_HowlEventListenerWrapper> _onrate;
+  List<_HowlEventListenerWrapper> _onseek;
+  List<_HowlEventListenerWrapper> _onunlock;
+  List<_HowlEventListenerWrapper> _onresume;
 
   List<_HowlEventListenerWrapper> _getEventListeners(String eventType) {
-    switch(eventType) {
-      case 'end': return _onend ;
-      case 'fade': return _onfade ;
-      case 'load': return _onload ;
-      case 'loaderror': return _onloaderror ;
-      case 'playerror': return _onplayerror ;
-      case 'pause': return _onpause ;
-      case 'play': return _onplay ;
-      case 'stop': return _onstop ;
-      case 'mute': return _onmute ;
-      case 'volume': return _onvolume ;
-      case 'rate': return _onrate ;
-      case 'seek': return _onseek ;
-      case 'unlock': return _onunlock ;
-      case 'resume': return _onresume ;
-      default: return null ;
+    switch (eventType) {
+      case 'end':
+        return _onend;
+      case 'fade':
+        return _onfade;
+      case 'load':
+        return _onload;
+      case 'loaderror':
+        return _onloaderror;
+      case 'playerror':
+        return _onplayerror;
+      case 'pause':
+        return _onpause;
+      case 'play':
+        return _onplay;
+      case 'stop':
+        return _onstop;
+      case 'mute':
+        return _onmute;
+      case 'volume':
+        return _onvolume;
+      case 'rate':
+        return _onrate;
+      case 'seek':
+        return _onseek;
+      case 'unlock':
+        return _onunlock;
+      case 'resume':
+        return _onresume;
+      default:
+        return null;
     }
   }
 
-  bool _webAudio ;
+  bool _webAudio;
 
-  Howl( {
-    List<String> src,
-    bool autoplay: false,
-    List<String> format,
-    bool html5: false,
-    bool mute: false,
-    bool loop: false,
-    int pool: 5,
-    bool preload: true,
-    double rate: 1,
-    Map<String,List> sprite,
-    double volume: 1,
-    bool xhrWithCredentials: false,
-
-    HowlEventListener onend,
-    HowlEventListener onfade,
-    HowlEventListener onload,
-    HowlEventListener onloaderror,
-    HowlEventListener onplayerror,
-    HowlEventListener onpause,
-    HowlEventListener onplay,
-    HowlEventListener onstop,
-    HowlEventListener onmute,
-    HowlEventListener onvolume,
-    HowlEventListener onrate,
-    HowlEventListener onseek,
-    HowlEventListener onunlock,
-    HowlEventListener onresume
-  } )
-  {
-
-    if (src == null || src.isEmpty ) {
-      window.console.error('An array of source files must be passed with any new Howl.') ;
+  Howl(
+      {List<String> src,
+      bool autoplay: false,
+      List<String> format,
+      bool html5: false,
+      bool mute: false,
+      bool loop: false,
+      int pool: 5,
+      bool preload: true,
+      double rate: 1,
+      Map<String, List> sprite,
+      double volume: 1,
+      bool xhrWithCredentials: false,
+      HowlEventListener onend,
+      HowlEventListener onfade,
+      HowlEventListener onload,
+      HowlEventListener onloaderror,
+      HowlEventListener onplayerror,
+      HowlEventListener onpause,
+      HowlEventListener onplay,
+      HowlEventListener onstop,
+      HowlEventListener onmute,
+      HowlEventListener onvolume,
+      HowlEventListener onrate,
+      HowlEventListener onseek,
+      HowlEventListener onunlock,
+      HowlEventListener onresume}) {
+    if (src == null || src.isEmpty) {
+      window.console.error('An array of source files must be passed with any new Howl.');
       return;
     }
 
-
-
     // If we don't have an AudioContext created yet, run the setup.
-    if ( Howler.ctx == null ) {
-      _setupAudioContext() ;
+    if (Howler.ctx == null) {
+      _setupAudioContext();
     }
 
     // Setup user-defined default properties.
-    this._autoplay = autoplay ;
-    this._format = format != null ? format : [] ;
-    this._html5 = html5 ;
-    this._muted = mute ;
-    this._loop = loop ;
-    this._pool = pool ;
-    this._preload = preload ;
-    this._rate = rate ;
-    this._sprite = sprite != null ? _HowlSpriteParams.toMapOfSpritesParams(sprite) : {} ;
-    this._src = new _HowlSrc.list(src) ;
-    this._volume = volume ;
-    this._xhrWithCredentials = xhrWithCredentials ;
+    this._autoplay = autoplay;
+    this._format = format != null ? format : [];
+    this._html5 = html5;
+    this._muted = mute;
+    this._loop = loop;
+    this._pool = pool;
+    this._preload = preload;
+    this._rate = rate;
+    this._sprite = sprite != null ? _HowlSpriteParams.toMapOfSpritesParams(sprite) : {};
+    this._src = new _HowlSrc.list(src);
+    this._volume = volume;
+    this._xhrWithCredentials = xhrWithCredentials;
 
     // Setup all other default properties.
     this._duration = 0;
@@ -746,7 +711,7 @@ class Howl {
     this._webAudio = Howler.usingWebAudio && !this._html5;
 
     // Automatically try to enable audio.
-    if ( Howler.ctx != null && Howler.autoUnlock ) {
+    if (Howler.ctx != null && Howler.autoUnlock) {
       Howler._unlockAudio();
     }
 
@@ -755,11 +720,9 @@ class Howl {
 
     // If they selected autoplay, add a play event to the load queue.
     if (this._autoplay) {
-      this._queue.add(
-          new _HowlCall('play', () {
-            this.play() ;
-          })
-      );
+      this._queue.add(new _HowlCall('play', () {
+            this.play();
+          }));
     }
 
     // Load the source file unless otherwise specified.
@@ -768,34 +731,32 @@ class Howl {
     }
   }
 
-  List<int> get soundIDs => new List.from( _sounds.map((s) => s._id) ) ;
+  List<int> get soundIDs => new List.from(_sounds.map((s) => s._id));
 
   @override
   String toString() {
-    return 'Howl{ playing: ${ this.playing() }, src: $_src, sounds: $_sounds}';
+    return 'Howl{ playing: ${this.playing()}, src: $_src, sounds: $_sounds}';
   }
 
   /// Load the audio file.
   /// @return {Howler}
   Howl load() {
-
     String url = null;
 
     // If no audio is available, quit immediately.
     if (Howler.noAudio) {
       this._emit('loaderror', null, 'No audio support.');
-      return this ;
+      return this;
     }
 
     // Loop through the sources and pick the first one that is compatible.
-    for (var i=0; i<this._src.length; i++) {
-      String ext , src ;
+    for (var i = 0; i < this._src.length; i++) {
+      String ext, src;
 
-      if (this._format != null && i < this._format.length && this._format[i] != null ) {
+      if (this._format != null && i < this._format.length && this._format[i] != null) {
         // If an extension was specified, use that instead.
         ext = this._format[i];
-      }
-      else {
+      } else {
         // Make sure the source is a string.
         src = this._src[i];
         if (src == null) {
@@ -804,12 +765,12 @@ class Howl {
         }
 
         var match = new RegExp(r'^data:audio/([^;,]+);', caseSensitive: false).firstMatch(src);
-        ext = match != null ? match.group(1) : null ;
+        ext = match != null ? match.group(1) : null;
 
-        if ( ext == null || ext.isEmpty ) {
-          var url = split(src, '?', 1)[0] ;
-          var match = new RegExp(r'\.([^.]+)$').firstMatch(url) ;
-          ext = match != null ? match.group(1) : null ;
+        if (ext == null || ext.isEmpty) {
+          var url = split(src, '?', 1)[0];
+          var match = new RegExp(r'\.([^.]+)$').firstMatch(url);
+          ext = match != null ? match.group(1) : null;
         }
 
         if (ext != null) {
@@ -829,12 +790,12 @@ class Howl {
       }
     }
 
-    if ( url == null ) {
+    if (url == null) {
       this._emit('loaderror', null, 'No codec support for selected audio sources.');
-      return this ;
+      return this;
     }
 
-    this._src = new _HowlSrc.value(url) ;
+    this._src = new _HowlSrc.value(url);
     this._state = 'loading';
 
     // If the hosting page is HTTPS and the source isn't,
@@ -855,13 +816,11 @@ class Howl {
     return this;
   }
 
-
   /// Play a sound or resume previous playback.
   /// @param  {String/Number} sprite   Sprite name for sprite playback or sound id to continue previous.
   /// @param  {Boolean} internal Internal Use: true prevents event firing.
   /// @return {Number}          Sound ID.
   int play([dynamic sprite, bool internal = false]) {
-
     int id = null;
 
     if (sprite == null) {
@@ -881,8 +840,7 @@ class Howl {
 
         if (num == 1) {
           sprite = null;
-        }
-        else {
+        } else {
           id = null;
         }
       }
@@ -891,25 +849,23 @@ class Howl {
     else if (sprite is int) {
       id = sprite;
       sprite = null;
-    }
-    else if (sprite is String && this._state == 'loaded' && this._sprite[sprite] == null ) {
+    } else if (sprite is String && this._state == 'loaded' && this._sprite[sprite] == null) {
       // If the passed sprite doesn't exist, do nothing.
-      return null ;
+      return null;
     }
-
 
     // Get the selected node, or get one from the pool.
-    Sound sound = id != null ? this._soundById(id) : this._inactiveSound() ;
+    Sound sound = id != null ? this._soundById(id) : this._inactiveSound();
 
     // If the sound doesn't exist, do nothing.
-    if ( sound == null ) {
+    if (sound == null) {
       return null;
     }
 
     // Select the sprite definition.
-    if (id != null && sprite == null ) {
-      sprite = sound._sprite ;
-      if (sprite == null) sprite = '__default' ;
+    if (id != null && sprite == null) {
+      sprite = sound._sprite;
+      if (sprite == null) sprite = '__default';
     }
 
     // If the sound hasn't loaded, we must wait to get the audio's duration.
@@ -925,11 +881,9 @@ class Howl {
       // Add the sound to the queue to be played on load.
       int soundId = sound._id;
 
-      this._queue.add(
-          new _HowlCall('play', () {
+      this._queue.add(new _HowlCall('play', () {
             this.play(soundId);
-          })
-      );
+          }));
 
       return soundId;
     }
@@ -952,15 +906,15 @@ class Howl {
     // Determine how long to play for and where to start playing.
     double seek = Math.max(0, sound._seek > 0 ? sound._seek : this._sprite[sprite].from / 1000);
     double duration = Math.max(0, ((this._sprite[sprite].from + this._sprite[sprite].to) / 1000) - seek);
-    int timeout = (duration * 1000) ~/ sound._rate.abs() ;
+    int timeout = (duration * 1000) ~/ sound._rate.abs();
 
     double start = this._sprite[sprite].from / 1000;
-    double stop = (this._sprite[sprite].from + this._sprite[sprite].to) / 1000 ;
+    double stop = (this._sprite[sprite].from + this._sprite[sprite].to) / 1000;
 
     bool loop = sound._loop;
     if (!loop) {
       var spriteConf = this._sprite[sprite];
-      loop = spriteConf.loop ;
+      loop = spriteConf.loop;
     }
 
     sound._sprite = sprite;
@@ -981,7 +935,7 @@ class Howl {
     // End the sound instantly if seek is at the end.
     if (seek >= stop) {
       this._ended(sound);
-      return null ;
+      return null;
     }
 
     // Begin the actual playback.
@@ -989,7 +943,7 @@ class Howl {
 
     if (this._webAudio) {
       // Fire this when the sound is ready to play to begin Web Audio playback.
-      HowlEventListener playWebAudio = (h,t,id,m) {
+      HowlEventListener playWebAudio = (h, t, id, m) {
         this._playLock = false;
         setParams();
         this._refreshBuffer(sound);
@@ -1004,11 +958,11 @@ class Howl {
         // Start a new timer if none is present.
         if (timeout > 0 && timeout < 100000000) {
           this._endTimers[sound._id] = new Timer(new Duration(milliseconds: timeout), () {
-            this._ended(sound) ;
-          }) ;
+            this._ended(sound);
+          });
         }
 
-        if ( !internal ) {
+        if (!internal) {
           new Timer(Duration.zero, () {
             this._emit('play', sound._id);
             this._loadQueue();
@@ -1018,8 +972,7 @@ class Howl {
 
       if (Howler.state == 'running') {
         playWebAudio(this, 'play', sound._id, null);
-      }
-      else {
+      } else {
         this._playLock = true;
 
         // Wait for the audio context to resume before playing.
@@ -1028,8 +981,7 @@ class Howl {
         // Cancel the end timer.
         this._clearTimer(sound._id);
       }
-    }
-    else {
+    } else {
       // Fire this when the sound is ready to play to begin HTML5 Audio playback.
       var playHtml5 = () {
         node.audio.currentTime = seek;
@@ -1041,7 +993,7 @@ class Howl {
         try {
           var play = node.audio.play();
 
-          if ( play != null ) {
+          if (play != null) {
             // Implements a lock to prevent DOMException: The play() request was interrupted by a call to pause().
             this._playLock = true;
 
@@ -1053,22 +1005,23 @@ class Howl {
               this._playLock = false;
               node._unlocked = true;
 
-              if ( !internal ) {
+              if (!internal) {
                 this._emit('play', sound._id);
                 this._loadQueue();
               }
-            }
-            ).catchError(() {
+            }).catchError(() {
               this._playLock = false;
-              this._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
-                  'on mobile devices and Chrome where playback was not within a user interaction.');
+              this._emit(
+                  'playerror',
+                  sound._id,
+                  'Playback was unable to start. This is most commonly an issue ' +
+                      'on mobile devices and Chrome where playback was not within a user interaction.');
 
               // Reset the ended and paused values.
               sound._ended = true;
               sound._paused = true;
             });
-          }
-          else if ( !internal ) {
+          } else if (!internal) {
             this._playLock = false;
             setParams();
             this._emit('play', sound._id);
@@ -1079,19 +1032,21 @@ class Howl {
           node.audio.playbackRate = sound._rate;
 
           // If the node is still paused, then we can assume there was a playback issue.
-          if ( node.audio.paused ) {
-            this._emit('playerror', sound._id, 'Playback was unable to start. This is most commonly an issue ' +
-                'on mobile devices and Chrome where playback was not within a user interaction.');
+          if (node.audio.paused) {
+            this._emit(
+                'playerror',
+                sound._id,
+                'Playback was unable to start. This is most commonly an issue ' +
+                    'on mobile devices and Chrome where playback was not within a user interaction.');
             return;
           }
 
           // Setup the end timer on sprites or listen for the ended event.
           if (sprite != '__default' || sound._loop) {
-            this._endTimers[sound._id] = new Timer(new Duration(milliseconds: timeout) , () {
-              this._ended(sound) ;
-            }) ;
-          }
-          else {
+            this._endTimers[sound._id] = new Timer(new Duration(milliseconds: timeout), () {
+              this._ended(sound);
+            });
+          } else {
             this._endTimers[sound._id] = (e) {
               // Fire ended on this audio node.
               this._ended(sound);
@@ -1102,8 +1057,7 @@ class Howl {
 
             node.eventTarget.addEventListener('ended', this._endTimers[sound._id], false);
           }
-        }
-        catch (err) {
+        } catch (err) {
           this._emit('playerror', sound._id, err);
         }
       };
@@ -1112,8 +1066,7 @@ class Howl {
 
       if (node.audio.readyState >= 3) {
         playHtml5();
-      }
-      else {
+      } else {
         this._playLock = true;
 
         // Cancel the end timer.
@@ -1131,23 +1084,18 @@ class Howl {
       }
     }
 
-    return sound._id ;
+    return sound._id;
   }
-
 
   /// Pause playback and save current position.
   /// @param  {Number} id The sound ID (empty to pause all in group).
   /// @return {Howl}
   Howl pause(int id, [bool internal = false]) {
-
-
     // If the sound hasn't loaded or a play() promise is pending, add it to the load queue to pause when capable.
     if (this._state != 'loaded' || this._playLock) {
-      this._queue.add(
-          new _HowlCall('pause', () {
+      this._queue.add(new _HowlCall('pause', () {
             this.pause(id);
-          })
-      );
+          }));
 
       return this;
     }
@@ -1155,7 +1103,7 @@ class Howl {
     // If no id is passed, get all ID's to be paused.
     var ids = this._getSoundIds(id);
 
-    for (var i=0; i<ids.length; i++) {
+    for (var i = 0; i < ids.length; i++) {
       int id2 = ids[i];
       this._clearTimer(id2);
 
@@ -1174,7 +1122,7 @@ class Howl {
         if (sound._node != null) {
           if (this._webAudio) {
             // Make sure the sound has been created.
-            if ( sound._node.bufferSource == null ) {
+            if (sound._node.bufferSource == null) {
               continue;
             }
 
@@ -1182,15 +1130,14 @@ class Howl {
 
             // Clean up the buffer source.
             this._cleanBuffer(sound._node);
-          }
-          else if ( !sound._node.audio.duration.isNaN || sound._node.audio.duration.isInfinite) {
+          } else if (!sound._node.audio.duration.isNaN || sound._node.audio.duration.isInfinite) {
             sound._node.audio.pause();
           }
         }
       }
 
       // Fire the pause event, unless `true` is passed as the 2nd argument.
-      if ( !internal ) {
+      if (!internal) {
         this._emit('pause', sound != null ? sound._id : null);
       }
     }
@@ -1199,15 +1146,15 @@ class Howl {
   }
 
   Howl stopAll() {
-    stopIDs( this.soundIDs ) ;
-    return this ;
+    stopIDs(this.soundIDs);
+    return this;
   }
 
   Howl stopIDs(List<int> ids) {
     for (int id in ids) {
-      stop(id) ;
+      stop(id);
     }
-    return this ;
+    return this;
   }
 
   /// Stop playback and reset to start.
@@ -1215,15 +1162,11 @@ class Howl {
   /// @param  {Boolean} internal Internal Use: true prevents event firing.
   /// @return {Howl}
   Howl stop(int id, [bool internal = false]) {
-
-
     // If the sound hasn't loaded, add it to the load queue to stop when capable.
     if (this._state != 'loaded' || this._playLock) {
-      this._queue.add(
-          new _HowlCall('stop', () {
+      this._queue.add(new _HowlCall('stop', () {
             this.stop(id);
-          })
-      );
+          }));
 
       return this;
     }
@@ -1231,7 +1174,7 @@ class Howl {
     // If no id is passed, get all ID's to be stopped.
     var ids = this._getSoundIds(id);
 
-    for (var i=0 ; i<ids.length ; i++) {
+    for (var i = 0; i < ids.length; i++) {
       // Clear the end timer.
       this._clearTimer(ids[i]);
 
@@ -1240,7 +1183,7 @@ class Howl {
 
       if (sound != null) {
         // Reset the seek position.
-        sound._seek = sound._start ;
+        sound._seek = sound._start;
         sound._rateSeek = 0;
         sound._paused = true;
         sound._ended = true;
@@ -1251,20 +1194,19 @@ class Howl {
         if (sound._node != null) {
           if (this._webAudio) {
             // Make sure the sound's AudioBufferSourceNode has been created.
-            if ( sound._node.bufferSource != null ) {
+            if (sound._node.bufferSource != null) {
               sound._node.bufferSource.stop(0);
 
               // Clean up the buffer source.
               this._cleanBuffer(sound._node);
             }
-          }
-          else if ( !sound._node.audio.duration.isNaN || sound._node.audio.duration.isInfinite ) {
-            sound._node.audio.currentTime = sound._start ;
+          } else if (!sound._node.audio.duration.isNaN || sound._node.audio.duration.isInfinite) {
+            sound._node.audio.currentTime = sound._start;
             sound._node.audio.pause();
           }
         }
 
-        if ( !internal ) {
+        if (!internal) {
           this._emit('stop', sound._id);
         }
       }
@@ -1273,21 +1215,16 @@ class Howl {
     return this;
   }
 
-
   /// Mute/unmute a single sound or all sounds in this Howl group.
   /// @param  {Boolean} muted Set to true to mute and false to unmute.
   /// @param  {Number} id    The sound ID to update (omit to mute/unmute all).
   /// @return {Howl}
   Howl mute(bool muted, [int id]) {
-
-
     // If the sound hasn't loaded, add it to the load queue to mute when capable.
-    if ( this._state != 'loaded'|| this._playLock ) {
-      this._queue.add(
-          new _HowlCall('mute', () {
+    if (this._state != 'loaded' || this._playLock) {
+      this._queue.add(new _HowlCall('mute', () {
             this.mute(muted, id);
-          })
-      );
+          }));
 
       return this;
     }
@@ -1296,16 +1233,15 @@ class Howl {
     if (id == null) {
       if (muted != null) {
         this._muted = muted;
-      }
-      else {
-        return this ;
+      } else {
+        return this;
       }
     }
 
     // If no id is passed, get all ID's to be muted.
     List<int> ids = this._getSoundIds(id);
 
-    for (var i=0; i<ids.length; i++) {
+    for (var i = 0; i < ids.length; i++) {
       // Get the sound.
       var sound = this._soundById(ids[i]);
 
@@ -1313,14 +1249,13 @@ class Howl {
         sound._muted = muted;
 
         // Cancel active fade and set the volume to the end value.
-        if ( sound._interval != null ) {
+        if (sound._interval != null) {
           this._stopFade(sound._id);
         }
 
         if (this._webAudio && sound._node != null) {
           sound._node.gainNode.gain.setValueAtTime(muted ? 0 : sound._volume, Howler.ctx.currentTime);
-        }
-        else if (sound._node != null) {
+        } else if (sound._node != null) {
           sound._node.audio.muted = Howler._muted ? true : muted;
         }
 
@@ -1340,13 +1275,11 @@ class Howl {
     if (id == null) {
       // Return the value of the groups' volume.
       return this._volume;
-    }
-    else {
-      Sound sound = this._soundById(id) ;
-      return sound != null ? sound._volume : 0 ;
+    } else {
+      Sound sound = this._soundById(id);
+      return sound != null ? sound._volume : 0;
     }
   }
-
 
   /// Get/set the volume of this sound or of the Howl group. This method can optionally take 0, 1 or 2 arguments.
   ///   volume() -> Returns the group's volume value.
@@ -1355,15 +1288,13 @@ class Howl {
   ///   volume(vol, id) -> Sets the volume of passed sound id.
   /// @return {Howl} Returns this.
   Howl setVolume(double vol, [int id, bool internal = false]) {
-    if (vol == null || vol < 0 || vol > 1) return this ;
+    if (vol == null || vol < 0 || vol > 1) return this;
 
     // If the sound hasn't loaded, add it to the load queue to change volume when capable.
-    if ( this._state != 'loaded'|| this._playLock ) {
-      this._queue.add(
-          new _HowlCall('volume', () {
-            this.setVolume(vol, id) ;
-          }
-          ));
+    if (this._state != 'loaded' || this._playLock) {
+      this._queue.add(new _HowlCall('volume', () {
+            this.setVolume(vol, id);
+          }));
 
       return this;
     }
@@ -1376,22 +1307,21 @@ class Howl {
     // Update one or all volumes.
     List<int> ids = this._getSoundIds(id);
 
-    for (var i=0; i < ids.length; i++) {
+    for (var i = 0; i < ids.length; i++) {
       var id2 = ids[i];
-      Sound sound = this._soundById( id2 );
+      Sound sound = this._soundById(id2);
 
       if (sound != null) {
-        sound._volume = vol ;
+        sound._volume = vol;
 
         // Stop currently running fades.
-        if ( !internal ) {
+        if (!internal) {
           this._stopFade(id2);
         }
 
         if (this._webAudio && sound._node != null && !sound._muted) {
           sound._node.gainNode.gain.setValueAtTime(vol, Howler.ctx.currentTime);
-        }
-        else if (sound._node != null && !sound._muted) {
+        } else if (sound._node != null && !sound._muted) {
           sound._node.audio.volume = vol * Howler.volume();
         }
 
@@ -1402,7 +1332,6 @@ class Howl {
     return this;
   }
 
-
   /// Fade a currently playing sound between two volumes (if no id is passsed, all sounds will fade).
   /// @param  {Number} from The value to fade from (0.0 to 1.0).
   /// @param  {Number} to   The volume to fade to (0.0 to 1.0).
@@ -1410,15 +1339,11 @@ class Howl {
   /// @param  {Number} id   The sound id (omit to fade all sounds).
   /// @return {Howl}
   Howl fade(double from, double to, int len, [int id]) {
-
-
     // If the sound hasn't loaded, add it to the load queue to fade when capable.
     if (this._state != 'loaded' || this._playLock) {
-      this._queue.add(
-          new _HowlCall('fade', () {
+      this._queue.add(new _HowlCall('fade', () {
             this.fade(from, to, len, id);
-          })
-      );
+          }));
 
       return this;
     }
@@ -1429,7 +1354,7 @@ class Howl {
     // Fade the volume of one or all sounds.
     List<int> ids = this._getSoundIds(id);
 
-    for (var i=0; i<ids.length; i++) {
+    for (var i = 0; i < ids.length; i++) {
       // Get the sound.
       Sound sound = this._soundById(ids[i]);
 
@@ -1456,7 +1381,6 @@ class Howl {
     return this;
   }
 
-
   /// Starts the internal interval to fade a sound.
   /// @param  {Object} sound Reference to sound to fade.
   /// @param  {Number} from The value to fade from (0.0 to 1.0).
@@ -1465,13 +1389,11 @@ class Howl {
   /// @param  {Number} id   The sound id to fade.
   /// @param  {Boolean} isGroup   If true, set the volume on the group.
   void _startFadeInterval(Sound sound, double from, double to, int len, id, isGroup) {
-
-
     double vol = from;
     double diff = to - from;
-    double steps = (diff / 0.01).abs() ;
+    double steps = (diff / 0.01).abs();
     int stepLen = Math.max(4, (steps > 0) ? len ~/ steps : len);
-    int lastTick = DateTime.now().millisecondsSinceEpoch ;
+    int lastTick = DateTime.now().millisecondsSinceEpoch;
 
     // Store the value being faded to.
     sound._fadeTo = to;
@@ -1479,7 +1401,6 @@ class Howl {
     // Update the volume value on each interval tick.
 
     sound._interval = new Timer.periodic(new Duration(milliseconds: stepLen), (t) {
-
       // Update the volume based on the time since the last tick.
       var now = DateTime.now().millisecondsSinceEpoch;
 
@@ -1497,8 +1418,7 @@ class Howl {
       // Change the volume.
       if (this._webAudio) {
         sound._volume = vol;
-      }
-      else {
+      } else {
         this.setVolume(vol, sound._id, true);
       }
 
@@ -1508,10 +1428,9 @@ class Howl {
       }
 
       // When the fade is complete, stop it and fire event.
-      if ( (to < from && vol <= to) || (to > from && vol >= to) ) {
-
+      if ((to < from && vol <= to) || (to > from && vol >= to)) {
         if (sound._interval != null) {
-          sound._interval.cancel() ;
+          sound._interval.cancel();
           sound._interval = null;
         }
 
@@ -1520,9 +1439,7 @@ class Howl {
         this.setVolume(to, sound._id);
         this._emit('fade', sound._id);
       }
-
-    }) ;
-
+    });
   }
 
   /// Internal method that stops the currently playing fade when
@@ -1547,7 +1464,6 @@ class Howl {
     }
   }
 
-
   /// Get the loop parameter on a sound. This method can optionally take 0, 1 or 2 arguments.
   ///   getLoop() -> Returns the group's loop value.
   ///   getLoop(id) -> Returns the sound id's loop value.
@@ -1556,14 +1472,12 @@ class Howl {
     // Determine the values for loop and id.
     if (id == null) {
       // Return the grou's loop value.
-      return this._loop ;
-    }
-    else {
+      return this._loop;
+    } else {
       Sound sound = this._soundById(id);
       return sound != null ? sound._loop : false;
     }
   }
-
 
   /// Set the loop parameter on a sound. This method can optionally take 0, 1 or 2 arguments.
   ///   setLoop(loop) -> Sets the loop value for all sounds in this Howl group.
@@ -1577,7 +1491,7 @@ class Howl {
     // If no id is passed, get all ID's to be looped.
     var ids = this._getSoundIds(id);
 
-    for (var i=0; i<ids.length; i++) {
+    for (var i = 0; i < ids.length; i++) {
       Sound sound = this._soundById(ids[i]);
 
       if (sound != null) {
@@ -1587,7 +1501,7 @@ class Howl {
           sound._node.bufferSource.loop = loop;
 
           if (loop) {
-            sound._node.bufferSource.loopStart = sound._start ;
+            sound._node.bufferSource.loopStart = sound._start;
             sound._node.bufferSource.loopEnd = sound._stop;
           }
         }
@@ -1596,7 +1510,6 @@ class Howl {
 
     return this;
   }
-
 
   /// Get the playback rate of a sound. This method can optionally take 0, 1 or 2 arguments.
   ///   getRate() -> Returns the first sound node's current playback rate.
@@ -1607,13 +1520,11 @@ class Howl {
     if (id == null) {
       // We will simply return the current rate of the first node.
       id = this._sounds[0]._id;
-    }
-    else {
+    } else {
       Sound sound = this._soundById(id);
       return sound != null ? sound._rate : this._rate;
     }
   }
-
 
   /// Set the playback rate of a sound. This method can optionally take 0, 1 or 2 arguments.
   ///   setRate(rate) -> Sets the playback rate of all sounds in this Howl group.
@@ -1622,11 +1533,9 @@ class Howl {
   Howl setRate(double rate, [int id]) {
     // If the sound hasn't loaded, add it to the load queue to change playback rate when capable.
     if (this._state != 'loaded' || this._playLock) {
-      this._queue.add(
-          new _HowlCall('rate', () {
+      this._queue.add(new _HowlCall('rate', () {
             this.setRate(rate, id);
-          })
-      );
+          }));
 
       return this;
     }
@@ -1637,9 +1546,9 @@ class Howl {
     }
 
     // Update one or all volumes.
-    List<int> ids = this._getSoundIds(id) ;
+    List<int> ids = this._getSoundIds(id);
 
-    for (var i=0; i < ids.length; i++) {
+    for (var i = 0; i < ids.length; i++) {
       int id2 = ids[i];
       Sound sound = this._soundById(id2);
 
@@ -1653,24 +1562,23 @@ class Howl {
         sound._rate = rate;
 
         // Change the playback rate.
-        if (this._webAudio && sound._node != null && sound._node.bufferSource != null ) {
+        if (this._webAudio && sound._node != null && sound._node.bufferSource != null) {
           sound._node.bufferSource.playbackRate.setValueAtTime(rate, Howler.ctx.currentTime);
-        }
-        else if (sound._node != null) {
+        } else if (sound._node != null) {
           sound._node.audio.playbackRate = rate;
         }
 
         // Reset the timers.
         double seek = this.getSeek(id2);
         double duration = ((this._sprite[sound._sprite].from + this._sprite[sound._sprite].to) / 1000) - seek;
-        int timeout = (duration * 1000) ~/ sound._rate.abs() ;
+        int timeout = (duration * 1000) ~/ sound._rate.abs();
 
         // Start a new end timer if sound is already playing.
-        if ( this._endTimers[id2] != null || !sound._paused ) {
+        if (this._endTimers[id2] != null || !sound._paused) {
           this._clearTimer(id2);
 
-          new Timer( new Duration(milliseconds: timeout), () {
-            this._ended(sound) ;
+          new Timer(new Duration(milliseconds: timeout), () {
+            this._ended(sound);
           });
         }
 
@@ -1680,7 +1588,6 @@ class Howl {
 
     return this;
   }
-
 
   /// Get the seek position of a sound. This method can optionally take 0, 1 or 2 arguments.
   ///   getSeek() -> Returns the first sound node's current seek position.
@@ -1694,11 +1601,11 @@ class Howl {
     }
 
     // If there is no ID, bail out.
-    if (id == null) return null ;
+    if (id == null) return null;
 
     // If the sound hasn't loaded, add it to the load queue to seek when capable.
     if (this._state != 'loaded' || this._playLock) {
-      return null ;
+      return null;
     }
 
     // Get the sound.
@@ -1706,16 +1613,14 @@ class Howl {
 
     if (sound != null) {
       if (this._webAudio) {
-        double realTime = this.playing(id) ? Howler.ctx.currentTime - sound._playStart : 0 ;
-        double rateSeek = sound._rateSeek != null && sound._rateSeek > 0 ? sound._rateSeek - sound._seek : 0 ;
+        double realTime = this.playing(id) ? Howler.ctx.currentTime - sound._playStart : 0;
+        double rateSeek = sound._rateSeek != null && sound._rateSeek > 0 ? sound._rateSeek - sound._seek : 0;
         return sound._seek + (rateSeek + realTime * sound._rate.abs());
-      }
-      else {
-        return sound._node.audio.currentTime ;
+      } else {
+        return sound._node.audio.currentTime;
       }
     }
   }
-
 
   /// Set the seek position of a sound. This method can optionally take 0, 1 or 2 arguments.
   ///   setSeek(seek) -> Sets the seek position of the first sound node.
@@ -1732,11 +1637,9 @@ class Howl {
 
     // If the sound hasn't loaded, add it to the load queue to seek when capable.
     if (this._state != 'loaded' || this._playLock) {
-      this._queue.add(
-          new _HowlCall('seek', () {
-            this.setSeek(seek, id) ;
-          })
-      );
+      this._queue.add(new _HowlCall('seek', () {
+            this.setSeek(seek, id);
+          }));
 
       return this;
     }
@@ -1757,7 +1660,7 @@ class Howl {
       this._clearTimer(id);
 
       // Update the seek position for HTML5 Audio.
-      if ( !this._webAudio && sound._node != null && !sound._node.audio.duration.isNaN ) {
+      if (!this._webAudio && sound._node != null && !sound._node.audio.duration.isNaN) {
         sound._node.audio.currentTime = seek;
       }
 
@@ -1773,24 +1676,19 @@ class Howl {
 
       // Wait for the play lock to be unset before emitting (HTML5 Audio).
       if (playing && !this._webAudio) {
-
         new Timer.periodic(Duration.zero, (t) {
           if (!this._playLock) {
             seekAndEmit();
             t.cancel();
           }
         });
-
-      }
-      else {
+      } else {
         seekAndEmit();
       }
-
     }
 
     return this;
   }
-
 
   /// Check if a specific sound is currently playing or not (if id is provided), or check if at least one of the sounds in the group is playing or not.
   /// @param  {Number}  id The sound id to check. If none is passed, the whole sound group is checked.
@@ -1799,11 +1697,11 @@ class Howl {
     // Check the passed sound ID (if any).
     if (id != null) {
       Sound sound = this._soundById(id);
-      return sound != null ? !sound._paused : false ;
+      return sound != null ? !sound._paused : false;
     }
 
     // Otherwise, loop through all sounds and check if any are playing.
-    for (var i=0; i < this._sounds.length; i++) {
+    for (var i = 0; i < this._sounds.length; i++) {
       if (!this._sounds[i]._paused) {
         return true;
       }
@@ -1811,7 +1709,6 @@ class Howl {
 
     return false;
   }
-
 
   /// Get the duration of this sound. Passing a sound id will return the sprite duration.
   /// @param  {Number} id The sound id to check. If none is passed, return full source duration.
@@ -1826,12 +1723,10 @@ class Howl {
 
     if (sound != null) {
       return this._sprite[sound._sprite].to / 1000;
-    }
-    else {
-      return this._duration ;
+    } else {
+      return this._duration;
     }
   }
-
 
   /// Returns the current loaded state of this Howl.
   /// @return {String} 'unloaded', 'loading', 'loaded'
@@ -1839,15 +1734,14 @@ class Howl {
     return this._state;
   }
 
-
   /// Unload and destroy the current Howl object.
   /// This will immediately stop all sound instances attached to this group.
   void unload() {
     // Stop playing any active sounds.
-    List<Sound> sss = this._sounds ;
+    List<Sound> sss = this._sounds;
 
-    for (int i=0; i < sss.length; i++) {
-      var sound = sss[i] ;
+    for (int i = 0; i < sss.length; i++) {
+      var sound = sss[i];
       // Stop the sound if it is currently playing.
       if (!sound._paused) {
         this.stop(sound._id);
@@ -1872,7 +1766,7 @@ class Howl {
       }
 
       // Empty out all of the nodes.
-      sss[i]._node = null ;
+      sss[i]._node = null;
 
       // Make sure all timers are cleared out.
       this._clearTimer(sound._id);
@@ -1887,14 +1781,14 @@ class Howl {
     // Delete this sound from the cache (if no other Howl is using it).
     var remCache = true;
 
-    for (int i=0; i<Howler._howls.length; i++) {
-      if ( Howler._howls[i]._src == this._src ) {
+    for (int i = 0; i < Howler._howls.length; i++) {
+      if (Howler._howls[i]._src == this._src) {
         remCache = false;
         break;
       }
     }
 
-    if ( remCache ) {
+    if (remCache) {
       _cache.remove(this._src);
     }
 
@@ -1908,7 +1802,6 @@ class Howl {
     return null;
   }
 
-
   /// Listen to a custom event.
   /// @param  {String}   event Event name.
   /// @param  {Function} fn    Listener to call.
@@ -1916,10 +1809,9 @@ class Howl {
   /// @param  {Number}   once  (INTERNAL) Marks event to fire only once.
   /// @return {Howl}
   Howl on(String eventType, HowlEventListener function, int id, [bool once = false]) {
-
-    var events = this._getEventListeners(eventType) ;
-    var listener = new _HowlEventListenerWrapper(function, id, once) ;
-    events.add(listener) ;
+    var events = this._getEventListeners(eventType);
+    var listener = new _HowlEventListenerWrapper(function, id, once);
+    events.add(listener);
     return this;
   }
 
@@ -1929,23 +1821,22 @@ class Howl {
   /// @param  {Number}   id    (optional) Only remove events for this sound.
   /// @return {Howl}
   Howl off(String eventType, [int id, HowlEventListener function]) {
-    var events = this._getEventListeners(eventType) ;
+    var events = this._getEventListeners(eventType);
     var i = 0;
 
     if (id != null) {
       // Loop through event store and remove the passed function.
-      for (i=0; i < events.length; i++) {
-        var isId = (id == events[i].id) ;
+      for (i = 0; i < events.length; i++) {
+        var isId = (id == events[i].id);
 
-        if ( isId && (function == null || function == events[i].function) ) {
+        if (isId && (function == null || function == events[i].function)) {
           events.removeAt(i);
           break;
         }
       }
-    }
-    else {
+    } else {
       // Clear out all events of this type.
-      events.clear() ;
+      events.clear();
     }
 
     return this;
@@ -1968,7 +1859,6 @@ class Howl {
     _onresume.clear();
   }
 
-
   /// Listen to a custom event and remove it once fired.
   /// @param  {String}   event Event name.
   /// @param  {Function} fn    Listener to call.
@@ -1979,19 +1869,19 @@ class Howl {
     return this;
   }
 
-  final Map<_HowlSrc,AudioBuffer> _cache = {};
+  final Map<_HowlSrc, AudioBuffer> _cache = {};
 
   /// Buffer a sound from URL, Data URI or cache and decode to audio source (Web Audio API).
   /// @param  {Howl} this
   void _loadBuffer() {
-    String url = this._src[0] ;
+    String url = this._src[0];
 
     // Check if the buffer has already been cached and use it instead.
     var audioBuffer = _cache[url];
 
-    if ( audioBuffer != null ) {
+    if (audioBuffer != null) {
       // Set the duration from the cache.
-      this._duration = audioBuffer.duration ;
+      this._duration = audioBuffer.duration;
 
       // Load the sound into this Howl.
       _loadSound(audioBuffer);
@@ -1999,79 +1889,73 @@ class Howl {
       return;
     }
 
-    if ( new RegExp(r'^data:[^;]+;base64,').hasMatch(url) ) {
+    if (new RegExp(r'^data:[^;]+;base64,').hasMatch(url)) {
       // Decode the base64 data URI without XHR, since some browsers don't support it.
-      var base64Data = split(url,',',1)[1] ;
-      Uint8List dataView = base64.decode(base64Data) ;
+      var base64Data = split(url, ',', 1)[1];
+      Uint8List dataView = base64.decode(base64Data);
       _decodeAudioData(dataView.buffer);
-    }
-    else {
-
-      HttpRequest.request(url,
+    } else {
+      HttpRequest.request(
+        url,
         method: 'GET',
         withCredentials: _xhrWithCredentials,
         responseType: 'arraybuffer',
-      ).then( (xhr) {
+      ).then((xhr) {
         // Make sure we get a successful response back.
-        var code = xhr.status ;
-        if (code < 200 ||  code >= 400) {
+        var code = xhr.status;
+        if (code < 200 || code >= 400) {
           this._emit('loaderror', null, 'Failed loading audio file with status: $code');
           return;
         }
 
         _decodeAudioData(xhr.response);
-      }, onError: () {
+      }, onError: (e) {
         // If there is an error, switch to HTML5 Audio.
         if (this._webAudio) {
           this._html5 = true;
           this._webAudio = false;
           this._sounds = [];
-          _cache.remove(url) ;
+          _cache.remove(url);
           this.load();
         }
       });
-
     }
   }
-
 
   /// Decode audio data from an array buffer.
   /// @param  {ArrayBuffer} arraybuffer The audio data.
   /// @param  {Howl}        this
   void _decodeAudioData(ByteBuffer arraybuffer) {
     // Fire a load error if something broke.
-    var error = () {
+    var error = (e) {
       this._emit('loaderror', null, 'Decoding audio data failed.');
     };
 
     // Load the sound on success.
     //var success = ;
 
-    Howler.ctx.decodeAudioData(arraybuffer).then( (buffer) {
+    Howler.ctx.decodeAudioData(arraybuffer).then((buffer) {
       if (buffer != null && this._sounds.length > 0) {
-        _cache[this._src] = buffer ;
+        _cache[this._src] = buffer;
         _loadSound(buffer);
+      } else {
+        error(null);
       }
-      else {
-        error();
-      }
-    }
-        , onError: error) ;
+    }, onError: error);
   }
-
 
   /// Sound is now loaded, so finish setting everything up and fire the loaded event.
   /// @param  {Howl} this
   /// @param  {Object} buffer The decoded buffer sound source.
   void _loadSound(AudioBuffer buffer) {
     // Set the duration.
-    if (buffer != null && (this._duration == null || this._duration == 0) ) {
+    if (buffer != null && (this._duration == null || this._duration == 0)) {
       this._duration = buffer.duration;
     }
 
     // Setup a sprite if none is defined.
-    if ( this._sprite.length == 0 ) {
-      this._sprite = {'__default': new _HowlSpriteParams(0, (this._duration * 1000).floor() ) } ;
+    if (this._sprite.length == 0) {
+      this._sprite = {'__default': new _HowlSpriteParams(0, (this._duration * 1000).floor())};
     }
 
     // Fire the loaded event.
@@ -2082,30 +1966,29 @@ class Howl {
     }
   }
 
-
   /// Emit all events of a specific type and pass the sound id.
   /// @param  {String} event Event name.
   /// @param  {Number} id    Sound ID.
   /// @param  {Number} msg   Message to go with event.
   /// @return {Howl}
   void _emit(String eventType, [int id, String msg]) {
-    List<_HowlEventListenerWrapper> events = _getEventListeners(eventType) ;
-    List<_HowlEventListenerWrapper> offEvents ;
+    List<_HowlEventListenerWrapper> events = _getEventListeners(eventType);
+    List<_HowlEventListenerWrapper> offEvents;
 
     // Loop through event store and fire all functions.
-    for (var i = events.length-1 ; i >= 0 ; i--) {
-      _HowlEventListenerWrapper evt = events[i] ;
+    for (var i = events.length - 1; i >= 0; i--) {
+      _HowlEventListenerWrapper evt = events[i];
 
       // Only fire the listener if the correct ID is used.
-      if ( evt.id == null || evt.id == id || eventType == 'load') {
+      if (evt.id == null || evt.id == id || eventType == 'load') {
         new Timer(Duration.zero, () {
           evt.function(this, eventType, id, msg);
         });
 
         // If this event was setup with `once`, remove it.
         if (evt.once) {
-          if (offEvents == null) offEvents = [] ;
-          offEvents.add(evt) ;
+          if (offEvents == null) offEvents = [];
+          offEvents.add(evt);
         }
       }
     }
@@ -2130,16 +2013,15 @@ class Howl {
 
       // Run the task if no event type is passed.
       if (event == null) {
-        task.action() ;
+        task.action();
       }
       // Remove this task if a matching event was passed.
       else if (task.event == event) {
-        this._queue.removeAt(0) ;
+        this._queue.removeAt(0);
         this._loadQueue();
       }
     }
   }
-
 
   /// Fired when playback ends at the end of the duration.
   /// @param  {Sound} sound The sound object to work with.
@@ -2150,16 +2032,20 @@ class Howl {
     // If we are using IE and there was network latency we may be clipping
     // audio before it completes playing. Lets check the node to make sure it
     // believes it has completed, before ending the playback.
-    if (!this._webAudio && sound._node != null && !sound._node.audio.paused && !sound._node.audio.ended && sound._node.audio.currentTime < sound._stop) {
-      new Timer(new Duration(milliseconds:  100), () {
-        this._ended(sound) ;
-      }) ;
+    if (!this._webAudio &&
+        sound._node != null &&
+        !sound._node.audio.paused &&
+        !sound._node.audio.ended &&
+        sound._node.audio.currentTime < sound._stop) {
+      new Timer(new Duration(milliseconds: 100), () {
+        this._ended(sound);
+      });
 
-      return ;
+      return;
     }
 
     // Should this sound loop?
-    var loop = sound._loop || this._sprite[sprite].loop ;
+    var loop = sound._loop || this._sprite[sprite].loop;
 
     // Fire the ended event.
     this._emit('end', sound._id);
@@ -2172,14 +2058,14 @@ class Howl {
     // Restart this timer if on a Web Audio loop.
     if (this._webAudio && loop) {
       this._emit('play', sound._id);
-      sound._seek = sound._start ;
+      sound._seek = sound._start;
       sound._rateSeek = 0;
       sound._playStart = Howler.ctx.currentTime;
 
-      var timeout = ((sound._stop - sound._start) * 1000) ~/ sound._rate.abs() ;
+      var timeout = ((sound._stop - sound._start) * 1000) ~/ sound._rate.abs();
 
       this._endTimers[sound._id] = new Timer(new Duration(milliseconds: timeout), () {
-        this._ended(sound) ;
+        this._ended(sound);
       });
     }
 
@@ -2187,7 +2073,7 @@ class Howl {
     if (this._webAudio && !loop) {
       sound._paused = true;
       sound._ended = true;
-      sound._seek = sound._start ;
+      sound._seek = sound._start;
       sound._rateSeek = 0;
       this._clearTimer(sound._id);
 
@@ -2210,19 +2096,18 @@ class Howl {
   void _clearTimer(id) {
     var endTimer = this._endTimers[id];
 
-    if ( endTimer != null ) {
+    if (endTimer != null) {
       // Clear the timeout or remove the ended listener.
-      if ( endTimer is Timer ) {
-        endTimer.cancel() ;
-      }
-      else {
+      if (endTimer is Timer) {
+        endTimer.cancel();
+      } else {
         Sound sound = this._soundById(id);
         if (sound != null && sound._node != null) {
           sound._node.eventTarget.removeEventListener('ended', endTimer, false);
         }
       }
 
-      this._endTimers.remove(id) ;
+      this._endTimers.remove(id);
     }
   }
 
@@ -2231,14 +2116,13 @@ class Howl {
   /// @return {Object}    Sound object or null.
   Sound _soundById(int id) {
     // Loop through all sounds and find the one with this ID.
-    for (var i=0; i<this._sounds.length; i++) {
+    for (var i = 0; i < this._sounds.length; i++) {
       Sound sound = this._sounds[i];
-      if (sound._id == id) return sound ;
+      if (sound._id == id) return sound;
     }
 
     return null;
   }
-
 
   /// Return an inactive sound from the pool or create a new one.
   /// @return {Sound} Sound playback object.
@@ -2246,7 +2130,7 @@ class Howl {
     this._drain();
 
     // Find the first inactive node to recycle.
-    for (var i=0; i < this._sounds.length; i++) {
+    for (var i = 0; i < this._sounds.length; i++) {
       var sound = this._sounds[i];
 
       if (sound._ended) {
@@ -2255,9 +2139,8 @@ class Howl {
     }
 
     // If no inactive node was found, create a new one.
-    return new Sound(this) ;
+    return new Sound(this);
   }
-
 
   /// Drain excess inactive sounds from the pool.
   void _drain() {
@@ -2270,14 +2153,14 @@ class Howl {
     }
 
     // Count the number of inactive sounds.
-    for (int i=0; i<this._sounds.length; i++) {
+    for (int i = 0; i < this._sounds.length; i++) {
       if (this._sounds[i]._ended) {
         cnt++;
       }
     }
 
     // Remove excess inactive sounds, going in reverse order.
-    for (int i=this._sounds.length - 1; i>=0; i--) {
+    for (int i = this._sounds.length - 1; i >= 0; i--) {
       if (cnt <= limit) return;
 
       var sound = this._sounds[i];
@@ -2289,12 +2172,11 @@ class Howl {
         }
 
         // Remove sounds until we have the pool size.
-        this._sounds.removeAt(i) ;
+        this._sounds.removeAt(i);
         cnt--;
       }
     }
   }
-
 
   /// Get all ID's from the sounds pool.
   /// @param  {Number} id Only return one ID if one is passed.
@@ -2303,17 +2185,15 @@ class Howl {
     if (id == null) {
       List<int> ids = [];
 
-      for (var i=0; i < this._sounds.length; i++) {
-        ids.add( this._sounds[i]._id );
+      for (var i = 0; i < this._sounds.length; i++) {
+        ids.add(this._sounds[i]._id);
       }
 
       return ids;
-    }
-    else {
+    } else {
       return [id];
     }
   }
-
 
   /// Load the sound back into the buffer source.
   /// @param  {Sound} sound The sound object to work with.
@@ -2324,69 +2204,65 @@ class Howl {
     sound._node.bufferSource.buffer = _cache[this._src];
 
     // Connect to the correct node.
-    if ( sound._panner != null ) {
+    if (sound._panner != null) {
       sound._node.bufferSource.connectNode(sound._panner);
-    }
-    else {
+    } else {
       sound._node.bufferSource.connectNode(sound._node.gainNode);
     }
 
     // Setup looping and playback rate.
     sound._node.bufferSource.loop = sound._loop;
-    if ( sound._loop ) {
-      sound._node.bufferSource.loopStart = sound._start ;
-      sound._node.bufferSource.loopEnd = sound._stop ;
+    if (sound._loop) {
+      sound._node.bufferSource.loopStart = sound._start;
+      sound._node.bufferSource.loopEnd = sound._stop;
     }
     sound._node.bufferSource.playbackRate.setValueAtTime(sound._rate, Howler.ctx.currentTime);
   }
-
 
   /// Prevent memory leaks by cleaning up the buffer source after playback.
   /// @param  {Object} node Sound's audio node containing the buffer source.
   /// @return {Howl}
   void _cleanBuffer(_HowlAudioNode node) {
-    if (Howler._scratchBuffer != null && node.bufferSource != null ) {
+    if (Howler._scratchBuffer != null && node.bufferSource != null) {
       //node.bufferSource.onEnded = null ; TODO
       node.bufferSource.disconnect(0);
 
-      if ( Howler.isIOS ) {
-        try { node.bufferSource.buffer = Howler._scratchBuffer; } catch(e) {}
+      if (Howler.isIOS) {
+        try {
+          node.bufferSource.buffer = Howler._scratchBuffer;
+        } catch (e) {}
       }
     }
     node.bufferSource = null;
   }
-
 }
 
 class _HowlAudioNode {
+  AudioElement audio;
+  GainNode gainNode;
 
-  AudioElement audio ;
-  GainNode gainNode ;
+  AudioBufferSourceNode bufferSource;
+  bool _unlocked;
 
-  AudioBufferSourceNode bufferSource ;
-  bool _unlocked ;
+  EventTarget get eventTarget => gainNode != null ? gainNode : audio;
 
-  EventTarget get eventTarget => gainNode != null ? gainNode : audio ;
-
-  _HowlAudioNode.audio(this.audio) ;
-  _HowlAudioNode.gain(this.gainNode) ;
-
+  _HowlAudioNode.audio(this.audio);
+  _HowlAudioNode.gain(this.gainNode);
 }
 
 class Sound {
+  final Howl _parent;
 
-  final Howl _parent ;
+  double _start = 0;
+  double _stop = 0;
 
-  double _start = 0 ;
-  double _stop = 0 ;
+  double _volume;
 
-  double _volume ;
-
-  bool _paused ;
-  bool _ended ;
-  int _id ;
-  String _sprite ;
-  double _seek ;
+  bool _paused;
+  bool _ended;
+  int _id;
+  String _sprite;
+  double _seek;
   double _rateSeek;
   double _rate;
 
@@ -2394,21 +2270,20 @@ class Sound {
 
   bool _muted;
 
-  _HowlAudioNode _node ;
+  _HowlAudioNode _node;
 
-  AudioNode _panner ;
+  AudioNode _panner;
 
-  Timer _interval ;
+  Timer _interval;
 
-  double _fadeTo ;
+  double _fadeTo;
 
-  double _playStart ;
+  double _playStart;
 
-  EventListener _loadFn ;
-  EventListener _errorFn ;
+  EventListener _loadFn;
+  EventListener _errorFn;
 
   Sound(this._parent) {
-
     var parent = this._parent;
 
     // Setup the default parameters.
@@ -2431,36 +2306,33 @@ class Sound {
     this.create();
   }
 
-
   /// Create and setup a new sound object, whether HTML5 Audio or Web Audio.
   /// @return {Sound}
   Sound create() {
-
     var parent = this._parent;
-    var volume = (Howler._muted || this._muted || this._parent._muted) ? 0 : this._volume ;
+    var volume = (Howler._muted || this._muted || this._parent._muted) ? 0 : this._volume;
 
     if (parent._webAudio) {
       // Create the gain node for controlling volume (the source will connect to this).
-      this._node = new _HowlAudioNode.gain( Howler.ctx.createGain() ) ;
+      this._node = new _HowlAudioNode.gain(Howler.ctx.createGain());
 
       this._node.gainNode.gain.setValueAtTime(volume, Howler.ctx.currentTime);
       //this._node.gainNode.paused = true; TODO
       this._node.gainNode.connectNode(Howler.masterGain);
-    }
-    else {
+    } else {
       // Get an unlocked Audio object from the pool.
-      this._node = new _HowlAudioNode.audio( Howler._obtainHtml5Audio() ) ;
+      this._node = new _HowlAudioNode.audio(Howler._obtainHtml5Audio());
 
       // Listen for errors (http://dev.w3.org/html5/spec-author-view/spec.html#mediaerror).
-      this._errorFn = this._errorListener ;
+      this._errorFn = this._errorListener;
       this._node.audio.addEventListener('error', this._errorFn, false);
 
       // Listen for 'canplaythrough' event to let us know the sound is ready.
-      this._loadFn = this._loadListener ;
+      this._loadFn = this._loadListener;
       this._node.audio.addEventListener(Howler._canPlayEvent, this._loadFn, false);
 
       // Setup the new audio node.
-      this._node.audio.src = parent._src[0] ;
+      this._node.audio.src = parent._src[0];
       this._node.audio.preload = 'auto';
       this._node.audio.volume = volume * Howler.volume();
 
@@ -2471,11 +2343,9 @@ class Sound {
     return this;
   }
 
-
   /// Reset the parameters of this sound to the original state (for recycle).
   /// @return {Sound}
   Sound reset() {
-
     var parent = this._parent;
 
     // Reset all of the parameters of this sound.
@@ -2497,8 +2367,6 @@ class Sound {
 
   /// HTML5 Audio error listener callback.
   void _errorListener(_) {
-
-
     // Fire an error event and pass back the code.
     this._parent._emit('loaderror', this._id, this._node.audio.error != null ? this._node.audio.error.code : "0");
 
@@ -2506,18 +2374,16 @@ class Sound {
     this._node.eventTarget.removeEventListener('error', this._errorFn, false);
   }
 
-
   /// HTML5 Audio canplaythrough listener callback.
   void _loadListener(_) {
-
     var parent = this._parent;
 
     // Round up the duration to account for the lower precision in HTML5 Audio.
-    parent._duration = ((this._node.audio.duration * 10) / 10).ceilToDouble() ;
+    parent._duration = ((this._node.audio.duration * 10) / 10).ceilToDouble();
 
     // Setup a sprite if none is defined.
-    if ( parent._sprite.length == 0 ) {
-      parent._sprite = {'__default': new _HowlSpriteParams( 0, (parent._duration * 1000).floor() )};
+    if (parent._sprite.length == 0) {
+      parent._sprite = {'__default': new _HowlSpriteParams(0, (parent._duration * 1000).floor())};
     }
 
     if (parent._state != 'loaded') {
@@ -2529,7 +2395,6 @@ class Sound {
     // Clear the event listener.
     this._node.eventTarget.removeEventListener(Howler._canPlayEvent, this._loadFn, false);
   }
-
 
   Howl get parent => _parent;
 
@@ -2549,9 +2414,7 @@ class Sound {
   bool get loop => _loop;
   bool get muted => _muted;
   double get playStart => _playStart;
-
 }
-
 
 /// Setup the audio context when available, or switch to HTML5 Audio mode.
 void _setupAudioContext() {
@@ -2561,8 +2424,7 @@ void _setupAudioContext() {
   // Check if we are using Web Audio and setup the AudioContext if we are.
   try {
     Howler.ctx = new AudioContext();
-  }
-  catch (e) {
+  } catch (e) {
     Howler.usingWebAudio = false;
   }
 
@@ -2572,8 +2434,8 @@ void _setupAudioContext() {
   }
 
   // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
-  if ( Howler.usingWebAudio) {
-    Howler.masterGain = Howler.ctx.createGain() ;
+  if (Howler.usingWebAudio) {
+    Howler.masterGain = Howler.ctx.createGain();
     Howler.masterGain.gain.setValueAtTime(Howler._muted ? 0 : 1, Howler.ctx.currentTime);
     Howler.masterGain.connectNode(Howler.ctx.destination);
   }
@@ -2581,4 +2443,3 @@ void _setupAudioContext() {
   // Re-run the setup on Howler.
   Howler._setup();
 }
-
