@@ -1,13 +1,13 @@
 name: howler
 description: Audio library for the modern web. This makes working with audio in Dart easy and reliable across many platforms. (Port of howler.js to Dart)
-version: 1.0.4
+version: 1.0.5
 homepage: https://github.com/gmpassos/howler.dart
 
 environment:
-  sdk: '>=2.2.0 <3.0.0'
+  sdk: '>=2.6.0 <3.0.0'
 
 dependencies:
- swiss_knife: ^2.2.1
+ swiss_knife: ^2.3.3
 
 dev_dependencies:
   test: ^1.5.1

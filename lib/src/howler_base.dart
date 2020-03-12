@@ -807,7 +807,7 @@ class Howl {
         ext = match != null ? match.group(1) : null ;
 
         if ( ext == null || ext.isEmpty ) {
-          var url = split(src, '?', 1)[0] ;
+          var url = split(src, '?', 2)[0] ;
           var match = new RegExp(r'\.([^.]+)$').firstMatch(url) ;
           ext = match != null ? match.group(1) : null ;
         }
@@ -2001,7 +2001,7 @@ class Howl {
 
     if ( new RegExp(r'^data:[^;]+;base64,').hasMatch(url) ) {
       // Decode the base64 data URI without XHR, since some browsers don't support it.
-      var base64Data = split(url,',',1)[1] ;
+      var base64Data = split(url,',',2)[1] ;
       Uint8List dataView = base64.decode(base64Data) ;
       _decodeAudioData(dataView.buffer);
     }
