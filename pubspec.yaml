@@ -7,7 +7,7 @@ environment:
   sdk: '>=2.6.0 <3.0.0'
 
 dependencies:
- swiss_knife: ^2.3.3
+ swiss_knife: ^2.3.4
 
 dev_dependencies:
   test: ^1.5.1
