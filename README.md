@@ -1,5 +1,18 @@
 [![howler.dart](https://github.com/gmpassos/howler.dart/blob/master/logo/howler-dart-logo.png?raw=true "howler.dart")](https://github.com/gmpassos/howler.dart)
 
+
+[![pub package](https://img.shields.io/pub/v/howler.dart.svg?logo=dart&logoColor=00b9fc)](https://pub.dartlang.org/packages/howler.dart)
+[![CI](https://img.shields.io/github/workflow/status/gmpassos/howler.dart/Dart%20CI/master?logo=github-actions&logoColor=white)](https://github.com/gmpassos/howler.dart/actions)
+[![GitHub Tag](https://img.shields.io/github/v/tag/gmpassos/howler.dart?logo=git&logoColor=white)](https://github.com/gmpassos/howler.dart/releases)
+[![New Commits](https://img.shields.io/github/commits-since/gmpassos/howler.dart/latest?logo=git&logoColor=white)](https://github.com/gmpassos/howler.dart/network)
+[![Last Commits](https://img.shields.io/github/last-commit/gmpassos/howler.dart?logo=git&logoColor=white)](https://github.com/gmpassos/howler.dart/commits/master)
+[![Pull Requests](https://img.shields.io/github/issues-pr/gmpassos/howler.dart?logo=github&logoColor=white)](https://github.com/gmpassos/howler.dart/pulls)
+[![Code size](https://img.shields.io/github/languages/code-size/gmpassos/howler.dart?logo=github&logoColor=white)](https://github.com/gmpassos/howler.dart)
+[![License](https://img.shields.io/github/license/gmpassos/howler.dart?logo=open-source-initiative&logoColor=green)](https://github.com/gmpassos/howler.dart/blob/master/LICENSE)
+[![Funding](https://img.shields.io/badge/Donate-yellow?labelColor=666666&style=plastic&logo=liberapay)](https://liberapay.com/gmpassos/donate)
+[![Funding](https://img.shields.io/liberapay/patrons/gmpassos.svg?logo=liberapay)](https://liberapay.com/gmpassos/donate)
+
+
 # Description
 [howler.dart](https://howlerjs.com) is an audio library for the modern web.
 It defaults to [Web Audio API](http://webaudio.github.io/web-audio-api/) and

@@ -1,3 +1,11 @@
+## 1.0.8
+
+- Fix some errors.
+    - Thanks for the fix (by https://github.com/TobiasHeidingsfeld) 
+- dartfmt.
+- sdk: '>=2.7.0 <3.0.0'
+- swiss_knife: ^2.5.8
+
 ## 1.0.7
 
 - swiss_knife: ^2.3.9
