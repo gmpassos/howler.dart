@@ -1,9 +1,3 @@
-Original project (JS):
-https://github.com/goldfire/howler.js
-
-Dart port project:
-https://github.com/gmpassos/howler.dart
-
 Copyright (c) 2013-2019 Graciliano M. Passos, James Simpson and GoldFire Studios, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -24,3 +18,9 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Original project (JS):
+https://github.com/goldfire/howler.js
+
+Dart port project:
+https://github.com/gmpassos/howler.dart

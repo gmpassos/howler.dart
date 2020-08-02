@@ -1,7 +1,7 @@
 [![howler.dart](https://github.com/gmpassos/howler.dart/blob/master/logo/howler-dart-logo.png?raw=true "howler.dart")](https://github.com/gmpassos/howler.dart)
 
 
-[![pub package](https://img.shields.io/pub/v/howler.dart.svg?logo=dart&logoColor=00b9fc)](https://pub.dartlang.org/packages/howler.dart)
+[![pub package](https://img.shields.io/pub/v/howler.svg?logo=dart&logoColor=00b9fc)](https://pub.dartlang.org/packages/howler.dart)
 [![CI](https://img.shields.io/github/workflow/status/gmpassos/howler.dart/Dart%20CI/master?logo=github-actions&logoColor=white)](https://github.com/gmpassos/howler.dart/actions)
 [![GitHub Tag](https://img.shields.io/github/v/tag/gmpassos/howler.dart?logo=git&logoColor=white)](https://github.com/gmpassos/howler.dart/releases)
 [![New Commits](https://img.shields.io/github/commits-since/gmpassos/howler.dart/latest?logo=git&logoColor=white)](https://github.com/gmpassos/howler.dart/network)
