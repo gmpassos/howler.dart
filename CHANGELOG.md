@@ -1,7 +1,8 @@
-## 1.0.11
+## 1.1.0
 
 - dartfmt.
 - lint.
+- Pull `Howler.js` `v2.2.0` bug fixes.
 
 ## 1.0.10
 

@@ -1,8 +1,7 @@
 /*!
- *  howler.dart v1.0.0
- *  howlerjs.com
+ *  howler.dart (howlerjs.com v2.2.0)
  *
- *  (c) 2013-2019, Graciliano M. Passos, James Simpson of GoldFire Studios
+ *  (c) 2013-2020, Graciliano M. Passos, James Simpson of GoldFire Studios
  *  https://github.com/gmpassos/howler.dart
  *
  *  MIT License
@@ -142,6 +141,16 @@ class _HowlerGlobal {
     return this;
   }
 
+  /// Handle stopping all sounds globally.
+  /// @return {Howler}
+  _HowlerGlobal stop() {
+    // Loop through all Howls and stop them.
+    for (var i = 0; i < _howls.length; i++) {
+      _howls[i].stop(null);
+    }
+    return this;
+  }
+
   /// Unload and destroy all currently loaded Howl objects.
   /// @return {Howler}
   _HowlerGlobal unload() {
@@ -233,6 +242,9 @@ class _HowlerGlobal {
       'm4a': canPlayType(audioTest, 'audio/x-m4a;') ||
           canPlayType(audioTest, 'audio/m4a;') ||
           canPlayType(audioTest, 'audio/aac;'),
+      'm4b': canPlayType(audioTest, 'audio/x-m4b;') ||
+          canPlayType(audioTest, 'audio/m4b;') ||
+          canPlayType(audioTest, 'audio/aac;'),
       'mp4': canPlayType(audioTest, 'audio/x-mp4;') ||
           canPlayType(audioTest, 'audio/mp4;') ||
           canPlayType(audioTest, 'audio/aac;'),
@@ -262,14 +274,8 @@ class _HowlerGlobal {
   /// Concept from: http://paulbakaus.com/tutorials/html5/web-audio-on-ios/
   /// @return {Howler}
   _HowlerGlobal _unlockAudio() {
-    // Only run this on certain browsers/devices.
-
-    var shouldUnlock = RegExp(
-            'iPhone|iPad|iPod|Android|BlackBerry|BB10|Silk|Mobi|Chrome|Safari',
-            caseSensitive: false)
-        .hasMatch(userAgent);
-
-    if (_audioUnlocked || ctx != null || !shouldUnlock) {
+    // Only run this if Web Audio is supported and it hasn't already been unlocked.
+    if (_audioUnlocked || ctx != null) {
       return this;
     }
 
@@ -306,15 +312,19 @@ class _HowlerGlobal {
     // to the WebAudio API which only needs a single activation.
     // This must occur before WebAudio setup or the source.onended
     // event will not fire.
-    for (var i = 0; i < html5PoolSize; i++) {
-      var audioNode = AudioElement();
+    while (_html5AudioPool.length < html5PoolSize) {
+      try {
+        var audioNode = _HowlAudioNode.audio(AudioElement());
+        // Mark this Audio object as unlocked to ensure it can get returned
+        // to the unlocked pool when released.
+        audioNode._unlocked = true;
 
-      // Mark this Audio object as unlocked to ensure it can get returned
-      // to the unlocked pool when released.
-      audioNode.setAttribute('_unlocked', 'true');
-
-      // Add the audio node to the pool.
-      _releaseHtml5Audio(audioNode);
+        // Add the audio node to the pool.
+        _releaseHtml5Audio(audioNode);
+      } catch (e) {
+        noAudio = true;
+        break;
+      }
     }
 
     // Loop through any assigned audio nodes and unlock them.
@@ -393,7 +403,7 @@ class _HowlerGlobal {
 
   /// Return an activated HTML5 Audio object to the pool.
   /// @return {Howler}
-  _HowlerGlobal _releaseHtml5Audio(audio) {
+  _HowlerGlobal _releaseHtml5Audio(_HowlAudioNode audio) {
     // Don't add audio to the pool if we don't know if it has been unlocked.
     if (audio._unlocked) {
       _html5AudioPool.add(audio);
@@ -435,13 +445,20 @@ class _HowlerGlobal {
       _suspendTimer = null;
       state = 'suspending';
 
-      ctx.suspend().then((_) {
+      // Handle updating the state of the audio context after suspending.
+      var handleSuspension = () {
         state = 'suspended';
 
         if (_resumeAfterSuspend) {
           _resumeAfterSuspend = false;
           _autoResume();
         }
+      };
+
+      ctx.suspend().then((_) {
+        handleSuspension();
+      }, onError: (_) {
+        handleSuspension();
       });
     });
 
@@ -455,10 +472,13 @@ class _HowlerGlobal {
       return this;
     }
 
-    if (state == 'running' && _suspendTimer != null) {
+    if (state == 'running' &&
+        ctx.state != 'interrupted' &&
+        _suspendTimer != null) {
       _suspendTimer.cancel();
       _suspendTimer = null;
-    } else if (state == 'suspended') {
+    } else if (state == 'suspended' ||
+        state == 'running' && ctx.state == 'interrupted') {
       ctx.resume().then((_) {
         state = 'running';
 
@@ -588,7 +608,10 @@ class Howl {
   Map<String, _HowlSpriteParams> _sprite;
   _HowlSrc _src;
   double _volume;
+
+  String _xhrMethod;
   bool _xhrWithCredentials;
+  Map<String, String> _xhrHeaders;
 
   double _duration;
   String _state;
@@ -662,7 +685,9 @@ class Howl {
       double rate = 1,
       Map<String, List> sprite,
       double volume = 1,
+      String xhrMethod = 'GET',
       bool xhrWithCredentials = false,
+      Map<String, String> xhrHeaders,
       HowlEventListener onend,
       HowlEventListener onfade,
       HowlEventListener onload,
@@ -701,7 +726,12 @@ class Howl {
         sprite != null ? _HowlSpriteParams.toMapOfSpritesParams(sprite) : {};
     _src = _HowlSrc.list(src);
     _volume = volume;
+
+    xhrMethod = (xhrMethod ?? 'GET').trim().toUpperCase();
+    _xhrMethod = xhrMethod.isNotEmpty ? xhrMethod : 'GET';
+
     _xhrWithCredentials = xhrWithCredentials;
+    _xhrHeaders = xhrHeaders;
 
     // Setup all other default properties.
     _duration = 0;
@@ -939,12 +969,6 @@ class Howl {
     var start = _sprite[sprite].from / 1000;
     var stop = (_sprite[sprite].from + _sprite[sprite].to) / 1000;
 
-    var loop = sound._loop;
-    if (!loop) {
-      var spriteConf = _sprite[sprite];
-      loop = spriteConf.loop;
-    }
-
     sound._sprite = sprite;
 
     // Mark the sound as ended instantly so that this async playback
@@ -957,6 +981,13 @@ class Howl {
       sound._seek = seek;
       sound._start = start;
       sound._stop = stop;
+
+      var loop = sound._loop;
+      if (!loop) {
+        var spriteConf = _sprite[sprite];
+        loop = spriteConf.loop;
+      }
+
       sound._loop = loop;
     };
 
@@ -999,7 +1030,7 @@ class Howl {
         }
       };
 
-      if (Howler.state == 'running') {
+      if (Howler.state == 'running' && Howler.ctx.state != 'interrupted') {
         playWebAudio(this, 'play', sound._id, null);
       } else {
         _playLock = true;
@@ -1093,8 +1124,14 @@ class Howl {
         }
       };
 
-      // Play immediately if ready, or wait for the 'canplaythrough'e vent.
+      // If this is streaming audio, make sure the src is set and load again.
+      if (node.src ==
+          'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA') {
+        node.src = _src[0];
+        node.load();
+      }
 
+      // Play immediately if ready, or wait for the 'canplaythrough'e vent.
       if (node.audio.readyState >= 3) {
         playHtml5();
       } else {
@@ -1231,6 +1268,11 @@ class Howl {
               sound._node.audio.duration.isInfinite) {
             sound._node.audio.currentTime = sound._start;
             sound._node.audio.pause();
+
+            // If this is a live stream, stop download once the audio is stopped.
+            if (sound._node.isInfinityDuration) {
+              _clearSound(sound._node);
+            }
           }
         }
 
@@ -1356,7 +1398,7 @@ class Howl {
     return this;
   }
 
-  /// Fade a currently playing sound between two volumes (if no id is passsed, all sounds will fade).
+  /// Fade a currently playing sound between two volumes (if no id is passed, all sounds will fade).
   /// @param  {Number} from The value to fade from (0.0 to 1.0).
   /// @param  {Number} to   The volume to fade to (0.0 to 1.0).
   /// @param  {Number} len  Time in milliseconds to fade.
@@ -1368,6 +1410,9 @@ class Howl {
       _queue.add(_HowlCall('fade', () => fade(from, to, len, id)));
       return this;
     }
+
+    from = _clip(from, 0.0, 1.0);
+    to = _clip(to, 0.0, 1.0);
 
     // Set the volume to the start position.
     setVolume(from, id);
@@ -1402,6 +1447,16 @@ class Howl {
     return this;
   }
 
+  double _clip(double n, double min, double max) {
+    if (n < min) {
+      return min;
+    } else if (n > max) {
+      return max;
+    } else {
+      return n;
+    }
+  }
+
   /// Starts the internal interval to fade a sound.
   /// @param  {Object} sound Reference to sound to fade.
   /// @param  {Number} from The value to fade from (0.0 to 1.0).
@@ -1431,8 +1486,11 @@ class Howl {
       vol += diff * tick;
 
       // Make sure the volume is in the right bounds.
-      vol = Math.max(0, vol);
-      vol = Math.min(1, vol);
+      if (diff < 0) {
+        vol = Math.max(to, vol);
+      } else {
+        vol = Math.min(to, vol);
+      }
 
       // Round to within 2 decimal points.
       vol = (vol * 100).round() / 100;
@@ -1762,10 +1820,10 @@ class Howl {
   /// This will immediately stop all sound instances attached to this group.
   void unload() {
     // Stop playing any active sounds.
-    var sss = _sounds;
+    var sounds = _sounds;
 
-    for (var i = 0; i < sss.length; i++) {
-      var sound = sss[i];
+    for (var i = 0; i < sounds.length; i++) {
+      var sound = sounds[i];
       // Stop the sound if it is currently playing.
       if (!sound._paused) {
         stop(sound._id);
@@ -1773,13 +1831,7 @@ class Howl {
 
       // Remove the source or disconnect.
       if (!_webAudio) {
-        // Set the source to 0-second silence to stop any downloading (except in IE).
-        /*
-        var checkIE = /MSIE |Trident\//.test(Howler._navigator && Howler._navigator.userAgent);
-        if (!checkIE) {
-          sound._node.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-        }
-        */
+        _clearSound(sounds[i]._node);
 
         // Remove any event listeners.
         sound._node.eventTarget
@@ -1792,7 +1844,7 @@ class Howl {
       }
 
       // Empty out all of the nodes.
-      sss[i]._node = null;
+      sounds[i]._node = null;
 
       // Make sure all timers are cleared out.
       _clearTimer(sound._id);
@@ -1926,8 +1978,9 @@ class Howl {
     } else {
       HttpRequest.request(
         url,
-        method: 'GET',
+        method: _xhrMethod,
         withCredentials: _xhrWithCredentials,
+        requestHeaders: _xhrHeaders,
         responseType: 'arraybuffer',
       ).then((xhr) {
         // Make sure we get a successful response back.
@@ -2269,6 +2322,13 @@ class Howl {
     }
     node.bufferSource = null;
   }
+
+  /// Set the source to a 0-second silence to stop any downloading.
+  /// @param  {Object} node Audio node to clear.
+  void _clearSound(node) {
+    node.src =
+        'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+  }
 }
 
 class _HowlAudioNode {
@@ -2283,6 +2343,18 @@ class _HowlAudioNode {
   _HowlAudioNode.audio(this.audio);
 
   _HowlAudioNode.gain(this.gainNode);
+
+  String get src => audio.src;
+  set src(String src) => audio.src = src;
+
+  num get duration => audio.duration;
+
+  bool get isInfinityDuration {
+    var duration = this.duration;
+    return duration != null && duration.isInfinite;
+  }
+
+  void load() => audio.load();
 }
 
 class Sound {
@@ -2354,7 +2426,7 @@ class Sound {
       _node.gainNode.gain.setValueAtTime(volume, Howler.ctx.currentTime);
       //this._node.gainNode.paused = true; TODO
       _node.gainNode.connectNode(Howler.masterGain);
-    } else {
+    } else if (!Howler.noAudio) {
       // Get an unlocked Audio object from the pool.
       _node = _HowlAudioNode.audio(Howler._obtainHtml5Audio());
 
@@ -2368,7 +2440,7 @@ class Sound {
 
       // Setup the new audio node.
       _node.audio.src = parent._src[0];
-      _node.audio.preload = 'auto';
+      _node.audio.preload = parent._preload ? 'auto' : 'none';
       _node.audio.volume = volume * Howler.volume();
 
       // Begin loading the source.
@@ -2484,8 +2556,8 @@ void _setupAudioContext() {
   // Create and expose the master GainNode when using Web Audio (useful for plugins or advanced usage).
   if (Howler.usingWebAudio) {
     Howler.masterGain = Howler.ctx.createGain();
-    Howler.masterGain.gain
-        .setValueAtTime(Howler._muted ? 0 : 1, Howler.ctx.currentTime);
+    Howler.masterGain.gain.setValueAtTime(
+        Howler._muted ? 0 : Howler._volume, Howler.ctx.currentTime);
     Howler.masterGain.connectNode(Howler.ctx.destination);
   }
 
