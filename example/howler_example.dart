@@ -1,7 +1,7 @@
 import 'package:howler/howler.dart';
 
-main() {
-  var howl = new Howl(
+void main() {
+  var howl = Howl(
       src: [
         'audio/track.mp3',
         'audio/track.wav'
