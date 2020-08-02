@@ -22,12 +22,12 @@ class _HowlerGlobal {
   int _counter = 1000;
 
   // Pool of unlocked HTML5 Audio objects.
-  List _html5AudioPool = [];
+  final List _html5AudioPool = [];
   int html5PoolSize = 10;
 
   // Internal properties.
   Map<String, bool> _codecs = {};
-  List<Howl> _howls = [];
+  final List<Howl> _howls = [];
   bool _muted = false;
   double _volume = 1;
   String _canPlayEvent = 'canplaythrough';

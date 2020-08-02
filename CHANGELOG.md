@@ -1,3 +1,7 @@
+## 1.0.10
+
+- Fix `README.md`.
+
 ## 1.0.9
 
 - Fix `README.md`.
