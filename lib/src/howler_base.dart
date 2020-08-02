@@ -2167,7 +2167,7 @@ class Howl {
 
       if (sound._ended) {
         // Disconnect the audio source when using Web Audio.
-        if (this._webAudio && sound._node != null) {
+        if (this._webAudio && sound._node != null && sound._node.bufferSource != null) {
           sound._node.bufferSource.disconnect(0);
         }
 
