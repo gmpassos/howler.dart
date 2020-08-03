@@ -1,3 +1,9 @@
+## 1.1.2
+
+- Improve example and README.md.
+- Automatically starts user interaction detection when calling `playSafe` and `fadeSafe`.
+- `Howl`: added `setUserInitialInteractionDetected`
+
 ## 1.1.1
 
 - Added `_DetectUserInteraction` to handle internally the initial user interaction. Browser will block play/resume before that.

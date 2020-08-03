@@ -34,15 +34,62 @@ main() {
     var howl = new Howl(
         src: ['audio/track.mp3','audio/track.wav'], // source in MP3 and WAV fallback
         loop: true,
-        volume: 0.60 // Play with 60% of original volume.
+        volume: 0.60, // Play with 60% of original volume.
+        preload: true // Automatically loads source.
     ) ;
     
     howl.play(); // Play sound.
+    // or:
+    howl.playSafe(); // Play sound, but checks for initial user interaction first.
+
     howl.fade(0.0, 0.60, 10000) ; // Make a fade, from volume 0% to 60% in 10s
+
+    // Or you can use an easier way:
+
+    howl.loadAndPlay( safe: true, callback: () {
+      howl.fade(0.0, 0.60, 10000) ;
+    });
+
+
 
 }
 ```
 
+## Browser and Initial User Interaction.
+
+Modern browsers will block any `play/autoplay` of any media (video or audio) before
+an user interaction with the browser window.
+
+The tracking is made listening events from `onMouseUp`, `onTouchEnd` and `onKeyUp`.
+Once the target condition is reached the listeners are canceled,
+removing any overhead.
+
+To prevent issues with audio play, it's recommended to activate,
+as soon as possible in your code,
+the detection of initial user interaction:
+
+```dart
+  Howl.detectUserInitialInteraction() ;
+```
+
+After that you can call safe methods that only are executed once the initial
+user interaction is detected:
+
+```dart
+  howl.playSafe();
+  howl.fadeSafe(0.0, 0.80, 3000);
+```
+
+- SEE: [Chrome - Autoplay Policy Changes](https://developers.google.com/web/updates/2017/09/autoplay-policy-changes#webaudio)
+
+## Extra Documentation
+
+You can take a look at [Howler.js - Documentation & Examples](https://github.com/goldfire/howler.js#documentation),
+for more about using this library.
+
+Note that this Dart library is a port from original JavaScript library
+[Howler.js](https://howlerjs.com). Some extra features were added, but
+the main behavior and API are very similar.
 
 ## Features and bugs
 

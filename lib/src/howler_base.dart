@@ -98,13 +98,13 @@ class _DetectUserInteraction {
       return;
     }
 
-    Future.delayed(Duration(milliseconds: 100), _setInteractionDetected);
+    Future.delayed(Duration(milliseconds: 100), _setInteractionDetectedImpl);
   }
 
-  static void _setInteractionDetected() {
-    print('_setInteractionDetected> focuse: $_focus');
+  static void setInteractionDetected() => _setInteractionDetectedImpl(true);
 
-    if (!_focus) {
+  static void _setInteractionDetectedImpl([bool force = false]) {
+    if (!_focus && !force) {
       return;
     }
 
@@ -1033,18 +1033,23 @@ class Howl {
     _DetectUserInteraction.detect();
   }
 
+  /// Forces the detection status of initial user interaction.
+  static void setUserInitialInteractionDetected() {
+    _DetectUserInteraction.setInteractionDetected();
+  }
+
   /// Returns [true] if the initial user interaction was already detected.
   static bool get userInitialInteractionDetected {
     _DetectUserInteraction.detect();
     return _DetectUserInteraction.interactionDetected;
   }
 
-  /// Same as [play], but checks for users interaction 1st.
+  /// Same as [play], but checks for users interaction first.
   ///
   /// If user hasn't interacted yet, this call will be put in a queue to be
   /// flushed when interaction is detected.
   int playSafe({dynamic sprite, bool internal = false, _SimpleCall callback}) {
-    if (_DetectUserInteraction.interactionDetected) {
+    if (userInitialInteractionDetected) {
       var id = play(sprite, internal);
       _doCall(callback);
       return id;
@@ -1605,7 +1610,7 @@ class Howl {
   /// flushed when interaction is detected.
   Howl fadeSafe(double from, double to, int len,
       {int id, _SimpleCall callback}) {
-    if (_DetectUserInteraction.interactionDetected) {
+    if (userInitialInteractionDetected) {
       fade(from, to, len, id);
       _doCall(callback);
     } else {
