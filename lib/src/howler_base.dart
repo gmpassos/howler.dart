@@ -15,6 +15,114 @@ import 'dart:web_audio';
 
 import 'package:swiss_knife/swiss_knife.dart';
 
+typedef _SimpleCall = void Function();
+
+void _doCall(_SimpleCall call) {
+  if (call != null) {
+    try {
+      call();
+    } catch (e, s) {
+      print(e);
+      print(s);
+    }
+  }
+}
+
+/// Detects initial user interaction and flushes calls waiting this state.
+/// By: Graciliano M. Passos - Jul/2020
+class _DetectUserInteraction {
+  static bool _interactionDetected = false;
+
+  static bool get interactionDetected => _interactionDetected;
+
+  static void callAfterDetection(_SimpleCall call) {
+    if (interactionDetected) {
+      try {
+        call();
+      } catch (e, s) {
+        print(e);
+        print(s);
+      }
+    } else {
+      detect();
+      _toCallOnDetection.add(call);
+    }
+  }
+
+  static final List<_SimpleCall> _toCallOnDetection = [];
+
+  static List<StreamSubscription> _listeners;
+
+  static void detect() {
+    if (_listeners != null || _interactionDetected) return;
+
+    var listeners = <StreamSubscription>[];
+
+    // Need to track window focus:
+    // if user changes window/tab (loses focus), any interaction should
+    // be ignored until regain focus.
+    listeners.add(window.onFocus.listen(_onFocus));
+    listeners.add(window.onBlur.listen(_onBlur));
+
+    // Interaction is defined only on Up/End events.
+    // Events like KeyDown or MouseDown won't set "user interacted"
+    // status in the browser.
+    listeners.add(window.onMouseUp.listen(_onInteraction));
+    listeners.add(window.onTouchEnd.listen(_onInteraction));
+    listeners.add(window.onKeyUp.listen(_onInteraction));
+
+    _listeners = listeners;
+  }
+
+  static void cancelDetection() {
+    var listeners = _listeners;
+    _listeners = null;
+
+    if (listeners != null) {
+      listeners.forEach((s) => s.cancel());
+    }
+  }
+
+  static bool _focus = true ;
+
+  static void _onFocus(dynamic event) {
+    _focus = true ;
+  }
+
+  static void _onBlur(dynamic event) {
+    _focus = false ;
+  }
+
+  static void _onInteraction(dynamic event) {
+    if (_interactionDetected) {
+      return ;
+    }
+
+    Future.delayed(Duration(milliseconds: 100), _setInteractionDetected) ;
+  }
+
+  static void _setInteractionDetected() {
+    print('_setInteractionDetected> focuse: $_focus') ;
+
+    if (!_focus) {
+      return ;
+    }
+
+    _interactionDetected = true;
+    cancelDetection();
+
+    Future.delayed(Duration(milliseconds: 10), _flushCalls);
+  }
+
+  static void _flushCalls() {
+    for (var call in _toCallOnDetection) {
+      _doCall(call);
+    }
+
+    _toCallOnDetection.clear();
+  }
+}
+
 class _HowlerGlobal {
   // Create a global ID counter.
   int _counter = 1000;
@@ -702,6 +810,8 @@ class Howl {
       HowlEventListener onseek,
       HowlEventListener onunlock,
       HowlEventListener onresume}) {
+    _DetectUserInteraction.detect();
+
     if (src == null || src.isEmpty) {
       window.console
           .error('An array of source files must be passed with any new Howl.');
@@ -777,7 +887,7 @@ class Howl {
 
     // Load the source file unless otherwise specified.
     if (_preload) {
-      load();
+      _loadImpl();
     }
   }
 
@@ -785,18 +895,68 @@ class Howl {
 
   @override
   String toString() {
-    return 'Howl{ playing: ${playing()}, src: $_src, sounds: $_sounds}';
+    return 'Howl{ playing: ${playing()}, status: ${state()}, src: $_src, sounds: $_sounds}';
   }
 
+  /// Calls [load] than [play] and [callback] when load event happens.
+  /// If [this] is already loaded, [play] and [callback] are called immediately.
+  Howl loadAndPlay({dynamic sprite, bool safe = true, _SimpleCall callback}) {
+    safe ??= true;
+
+    if (isLoaded) {
+      load();
+
+      if (safe) {
+        playSafe( sprite: sprite, callback: callback );
+      } else {
+        play(sprite);
+        _doCall(callback);
+      }
+    } else {
+      once('load', (howl, eventType, id, message) {
+        if (safe) {
+          playSafe( sprite: sprite, callback: callback );
+        } else {
+          play(sprite);
+          _doCall(callback);
+        }
+      });
+
+      load();
+    }
+
+    return this;
+  }
+
+  bool get isLoaded => _state == 'loaded';
+
   /// Load the audio file.
+  ///
+  /// [callback] Optional callback for when the 'load' event happens. If this is already loaded, it's called immediately.
   /// @return {Howler}
-  Howl load() {
+  Howl load([_SimpleCall callback]) {
+    if (callback == null) {
+      _loadImpl();
+    } else if (isLoaded) {
+      _loadImpl();
+      _doCall(callback);
+    } else {
+      once('load', (howl, eventType, id, message) {
+        _doCall(callback);
+      });
+      _loadImpl();
+    }
+
+    return this;
+  }
+
+  void _loadImpl() {
     String url;
 
     // If no audio is available, quit immediately.
     if (Howler.noAudio) {
       _emit('loaderror', null, 'No audio support.');
-      return this;
+      return;
     }
 
     // Loop through the sources and pick the first one that is compatible.
@@ -845,7 +1005,7 @@ class Howl {
 
     if (url == null) {
       _emit('loaderror', null, 'No codec support for selected audio sources.');
-      return this;
+      return;
     }
 
     _src = _HowlSrc.value(url);
@@ -866,8 +1026,35 @@ class Howl {
     if (_webAudio) {
       _loadBuffer();
     }
+  }
 
-    return this;
+  /// Forces initialization of user interaction detection.
+  static void detectUserInitialInteraction() {
+    _DetectUserInteraction.detect();
+  }
+
+  /// Returns [true] if the initial user interaction was already detected.
+  static bool get userInitialInteractionDetected {
+    _DetectUserInteraction.detect();
+    return _DetectUserInteraction.interactionDetected;
+  }
+
+  /// Same as [play], but checks for users interaction 1st.
+  ///
+  /// If user hasn't interacted yet, this call will be put in a queue to be
+  /// flushed when interaction is detected.
+  int playSafe( { dynamic sprite, bool internal = false, _SimpleCall callback } ) {
+    if (_DetectUserInteraction.interactionDetected) {
+      var id = play(sprite, internal);
+      _doCall(callback);
+      return id ;
+    } else {
+      _DetectUserInteraction.callAfterDetection(() {
+        play(sprite, internal);
+        _doCall(callback);
+      });
+      return null;
+    }
   }
 
   /// Play a sound or resume previous playback.
@@ -1156,10 +1343,24 @@ class Howl {
     return sound._id;
   }
 
+  /// A simple play/pause switch.
+  ///
+  /// If [this] is currently [playing], it will [pause] the sound,
+  /// otherwise it will [play].
+  bool playOrPauseSwitch([int id]) {
+    if (playing(id)) {
+      pause();
+      return false;
+    } else {
+      play();
+      return true;
+    }
+  }
+
   /// Pause playback and save current position.
   /// @param  {Number} id The sound ID (empty to pause all in group).
   /// @return {Howl}
-  Howl pause(int id, [bool internal = false]) {
+  Howl pause([int id, bool internal = false]) {
     // If the sound hasn't loaded or a play() promise is pending, add it to the load queue to pause when capable.
     if (_state != 'loaded' || _playLock) {
       _queue.add(_HowlCall('pause', () => pause(id)));
@@ -1395,6 +1596,23 @@ class Howl {
       }
     }
 
+    return this;
+  }
+
+  /// Same as [fade], but checks for users interaction 1st.
+  ///
+  /// If user hasn't interacted yet, this call will be put in a queue to be
+  /// flushed when interaction is detected.
+  Howl fadeSafe(double from, double to, int len, { int id, _SimpleCall callback }) {
+    if (_DetectUserInteraction.interactionDetected) {
+      fade(from, to, len, id);
+      _doCall(callback);
+    } else {
+      _DetectUserInteraction.callAfterDetection(() {
+        fade(from, to, len, id);
+        _doCall(callback);
+      });
+    }
     return this;
   }
 
@@ -1886,8 +2104,8 @@ class Howl {
   /// @param  {Number}   id    (optional) Only listen to events for this sound.
   /// @param  {Number}   once  (INTERNAL) Marks event to fire only once.
   /// @return {Howl}
-  Howl on(String eventType, HowlEventListener function, int id,
-      [bool once = false]) {
+  Howl on(String eventType, HowlEventListener function,
+      [int id, bool once = false]) {
     var events = _getEventListeners(eventType);
     var listener = _HowlEventListenerWrapper(function, id, once);
     events.add(listener);
@@ -1945,7 +2163,7 @@ class Howl {
   /// @param  {Function} fn    Listener to call.
   /// @param  {Number}   id    (optional) Only listen to events for this sound.
   /// @return {Howl}
-  Howl once(String event, HowlEventListener function, int id) {
+  Howl once(String event, HowlEventListener function, [int id]) {
     on(event, function, id, true);
     return this;
   }
@@ -1999,7 +2217,7 @@ class Howl {
           _webAudio = false;
           _sounds = [];
           _cache.remove(url);
-          load();
+          _loadImpl();
         }
       });
     }
@@ -2345,6 +2563,7 @@ class _HowlAudioNode {
   _HowlAudioNode.gain(this.gainNode);
 
   String get src => audio.src;
+
   set src(String src) => audio.src = src;
 
   num get duration => audio.duration;

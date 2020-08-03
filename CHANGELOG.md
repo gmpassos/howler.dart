@@ -1,3 +1,15 @@
+## 1.1.1
+
+- Added `_DetectUserInteraction` to handle internally the initial user interaction. Browser will block play/resume before that.
+- Added `callback` parameter to method `load`.
+- New methods:
+    - `loadAndPlay`: calls `load` and after 'load' event calls `play`.
+    - `playSafe`: Only calls `play` after detect user interaction.
+    - `fadeSafe`: Only calls `fade` after detect user interaction.
+    - `playOrPauseSwitch`: A simple play/pause switch.
+- Added browser tests.
+- CI: Added Firefox platform.
+
 ## 1.1.0
 
 - dartfmt.
