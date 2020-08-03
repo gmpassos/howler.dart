@@ -14,7 +14,8 @@ void main() {
   // Calls `load` and after 'load' event, calls `play` and `callback`:
   howl.loadAndPlay(
       safe: true, // Checks for initial user interaction before play.
-      callback: () { // Callback is called only after play call.
+      callback: () {
+        // Callback is called only after play call.
         // Make a fade, from volume 0% to 60% in 10s:
         howl.fade(0.0, 0.60, 10000);
       });
