@@ -83,29 +83,29 @@ class _DetectUserInteraction {
     }
   }
 
-  static bool _focus = true ;
+  static bool _focus = true;
 
   static void _onFocus(dynamic event) {
-    _focus = true ;
+    _focus = true;
   }
 
   static void _onBlur(dynamic event) {
-    _focus = false ;
+    _focus = false;
   }
 
   static void _onInteraction(dynamic event) {
     if (_interactionDetected) {
-      return ;
+      return;
     }
 
-    Future.delayed(Duration(milliseconds: 100), _setInteractionDetected) ;
+    Future.delayed(Duration(milliseconds: 100), _setInteractionDetected);
   }
 
   static void _setInteractionDetected() {
-    print('_setInteractionDetected> focuse: $_focus') ;
+    print('_setInteractionDetected> focuse: $_focus');
 
     if (!_focus) {
-      return ;
+      return;
     }
 
     _interactionDetected = true;
@@ -907,7 +907,7 @@ class Howl {
       load();
 
       if (safe) {
-        playSafe( sprite: sprite, callback: callback );
+        playSafe(sprite: sprite, callback: callback);
       } else {
         play(sprite);
         _doCall(callback);
@@ -915,7 +915,7 @@ class Howl {
     } else {
       once('load', (howl, eventType, id, message) {
         if (safe) {
-          playSafe( sprite: sprite, callback: callback );
+          playSafe(sprite: sprite, callback: callback);
         } else {
           play(sprite);
           _doCall(callback);
@@ -1043,11 +1043,11 @@ class Howl {
   ///
   /// If user hasn't interacted yet, this call will be put in a queue to be
   /// flushed when interaction is detected.
-  int playSafe( { dynamic sprite, bool internal = false, _SimpleCall callback } ) {
+  int playSafe({dynamic sprite, bool internal = false, _SimpleCall callback}) {
     if (_DetectUserInteraction.interactionDetected) {
       var id = play(sprite, internal);
       _doCall(callback);
-      return id ;
+      return id;
     } else {
       _DetectUserInteraction.callAfterDetection(() {
         play(sprite, internal);
@@ -1603,7 +1603,8 @@ class Howl {
   ///
   /// If user hasn't interacted yet, this call will be put in a queue to be
   /// flushed when interaction is detected.
-  Howl fadeSafe(double from, double to, int len, { int id, _SimpleCall callback }) {
+  Howl fadeSafe(double from, double to, int len,
+      {int id, _SimpleCall callback}) {
     if (_DetectUserInteraction.interactionDetected) {
       fade(from, to, len, id);
       _doCall(callback);

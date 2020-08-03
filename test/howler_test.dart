@@ -9,7 +9,8 @@ void _sleep(int sleepMs) async {
   await Future.delayed(Duration(milliseconds: sleepMs), () {});
 }
 
-void _sleepUntilCondition(String conditionName, int timeout, bool Function() conditionTester) async {
+void _sleepUntilCondition(
+    String conditionName, int timeout, bool Function() conditionTester) async {
   print('-------------------------------------');
   print('SLEEP UNTIL CONDITION[$conditionName]> timeout: $timeout');
 
@@ -32,7 +33,8 @@ void _sleepUntilCondition(String conditionName, int timeout, bool Function() con
         sleep = 500;
       }
 
-      print('sleep: $sleep ; elapsed: $elapsed ; remaining: $remaining ; timeout: $timeout');
+      print(
+          'sleep: $sleep ; elapsed: $elapsed ; remaining: $remaining ; timeout: $timeout');
       await _sleep(sleep);
     } else {
       break;
@@ -69,9 +71,9 @@ void main() {
       await _sleepUntilCondition('howl.playing()', 5000, () => howl.playing());
       expect(howl.playing(), isTrue);
 
-      await _sleepUntilCondition('howl.getVolume() == 0.90', 5000, () => howl.getVolume() == 0.90);
+      await _sleepUntilCondition(
+          'howl.getVolume() == 0.90', 5000, () => howl.getVolume() == 0.90);
       expect(howl.getVolume(), equals(0.90));
-
     });
   });
 }
