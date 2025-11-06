@@ -1,3 +1,7 @@
+## 2.0.0
+
+- Upgrade to Dart 3 (incl. null safety)
+
 ## 1.1.2
 
 - Improve example and README.md.
